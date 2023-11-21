@@ -1,6 +1,6 @@
 import numpy as np
 
-
+# code from https://stackoverflow.com/questions/22583391/peak-signal-detection-in-realtime-timeseries-data/56451135#56451135
 class real_time_peak_detection():
     def __init__(self, array, lag, threshold, influence):
         self.y = list(array)
