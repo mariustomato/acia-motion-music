@@ -9,13 +9,20 @@ INFLUENCE=0.1#value between [0,1]->no to full influence
 
 def main():
     #provides {-1,0;1} for determining a peak
-    peak_detector=real_time_peak_detection(array=[],lag=LAG,threshold=THREASHOLD,influence=2)
 
     #fill in lag
-    for i in range(10):
-        peak_detector.thresholding_algo(read_com())
+    lag_data=[]
+    for i in range(LAG):
+        lag_data.append(int(read_com()))
+
+    print("lagdata "+str(lag_data))
+
+    peak_detector = real_time_peak_detection(array=lag_data, lag=LAG, threshold=THREASHOLD, influence=2)
 
     while True:
         #just print some detections
-        print(peak_detector.thresholding_algo(read_com()))
-        time.sleep(0.1)
+        val=int(read_com())
+        print(f"${val} converts to ${peak_detector.thresholding_algo(val)}")
+        time.sleep(.5)
+        #print(read_com())
+main()
