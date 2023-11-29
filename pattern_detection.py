@@ -1,5 +1,6 @@
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
+import numpy as np
 
 
 def sliding_window(sequence, window_size):
@@ -18,8 +19,29 @@ def analyze_sequence(sequence, window_size, n_clusters):
     scaler = StandardScaler()
     windows_scaled = scaler.fit_transform(windows)
 
-    kmeans = KMeans(n_clusters=n_clusters, random_state=0).fit(windows_scaled)
+    kmeans = KMeans(n_clusters=n_clusters, random_state=0, n_init='auto').fit(windows_scaled)
     return kmeans.labels_
+
+
+def calculate_bpm(labels, window_size, sampling_rate):
+    # Find the most common cluster
+    most_common_cluster = np.bincount(labels).argmax()
+    # print(f"Most common cluster {most_common_cluster}")
+
+    # Calculate the timestamps for each occurrence of the most common cluster
+    timestamps = [i * (window_size / sampling_rate) for i, label in enumerate(labels) if label == most_common_cluster]
+    # print(f"Timestamps {timestamps}")
+
+    # Calculate the average time interval between these timestamps
+    if len(timestamps) > 1:
+        average_interval = np.mean(np.diff(timestamps))
+        # print(f"Average interval {average_interval}")
+
+        # Convert to BPM
+        bpm = 60 / average_interval
+        return bpm
+    else:
+        return None
 
 
 

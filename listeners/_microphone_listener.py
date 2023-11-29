@@ -7,7 +7,7 @@ FORMAT = pyaudio.paInt16  # Audio format (16-bit PCM)
 CHANNELS = 1              # Single channel for microphone
 RATE = 44100              # Sampling rate
 CHUNK = 1024              # Number of frames per buffer
-RECORD_SECONDS = 5        # Duration of recording
+RECORD_SECONDS = 3        # Duration of recording
 MAX_AMPLITUDE = 2**(16 - 1)  # Maximum amplitude for 16-bit audio
 
 # Initialize PyAudio
