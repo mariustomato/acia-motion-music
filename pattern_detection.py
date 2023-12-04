@@ -26,16 +26,16 @@ def analyze_sequence(sequence, window_size, n_clusters):
 def calculate_bpm(labels, window_size, sampling_rate):
     # Find the most common cluster
     most_common_cluster = np.bincount(labels).argmax()
-    # print(f"Most common cluster {most_common_cluster}")
+    print(f"Most common cluster {most_common_cluster}")
 
     # Calculate the timestamps for each occurrence of the most common cluster
     timestamps = [i * (window_size / sampling_rate) for i, label in enumerate(labels) if label == most_common_cluster]
-    # print(f"Timestamps {timestamps}")
+    print(f"Timestamps {timestamps}")
 
     # Calculate the average time interval between these timestamps
     if len(timestamps) > 1:
         average_interval = np.mean(np.diff(timestamps))
-        # print(f"Average interval {average_interval}")
+        print(f"Average interval {average_interval}")
 
         # Convert to BPM
         bpm = 60 / average_interval
