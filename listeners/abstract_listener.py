@@ -2,5 +2,5 @@ from abc import ABC
 
 
 class Listener(ABC):
-    def red(self):
+    def read(self):
         pass
