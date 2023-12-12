@@ -3,6 +3,7 @@ import time
 from listeners.simulated_listener import SimulatedListener
 from utils.peak_detection import real_time_peak_detection
 from plain_bpm_detector import advanced_detect_bpm
+from plain_bpm_detector import advanced_detect_bpm_capped
 # from pattern_detection import analyze_sequence, calculate_bpm
 
 
@@ -25,17 +26,23 @@ def main():
     sequence = []
     window_size = 4
     # aka how many datapoint per second
-    sampling_rate = 5
+    sampling_rate = 100
     iteration = 0
+    # get current time
+    start_time = time.time()
 
     while True:
         for listener in listeners:
-            val = int(listener.read())
+            if time.time() - start_time > 60:
+                val = int(listener.read_2())
+            else:
+                val = int(listener.read())
             if len(sequence) == sampling_rate * 60:
                 sequence = sequence[1:]
             sequence.append(val)
-            bpm = advanced_detect_bpm(sequence, sampling_rate, 80)
-            print(f"Sequence: {sequence}")
+            # bpm = advanced_detect_bpm(sequence, sampling_rate, 80)
+            bpm = advanced_detect_bpm_capped(sequence, sampling_rate, 80, sampling_rate * 10)
+            # print(f"Sequence: {sequence}")
             print(f"Detected BPM: {bpm}")
             time.sleep(1/sampling_rate)
         # just print some detections
