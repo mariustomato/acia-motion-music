@@ -1,5 +1,6 @@
 import time
 from listeners.simulated_listener import SimulatedListener
+from utils.client import Client
 from utils.peak_detection import real_time_peak_detection
 from utils.plain_bpm_detector import advanced_detect_bpm
 from utils.plain_bpm_detector import advanced_detect_bpm_capped
@@ -18,7 +19,7 @@ if __name__ == '__main__':
     for _ in range(LAG):
         lag_data.append(int(listeners[0].read()))
 
-    peak_detector = real_time_peak_detection(array=lag_data, lag=LAG, threshold=THREASHOLD, influence=2)
+    peak_detector = real_time_peak_detection(array=lag_data, lag=LAG, threshold=THRESHOLD, influence=2)
     sequence = []
     # TODO: adjust window size on hardware implementation
     window_size = 4
@@ -38,7 +39,7 @@ if __name__ == '__main__':
             # print(f"Sequence: {sequence}")
             print(f"Detected BPM: {bpm}")
 
-            clock = time.current_time()
-            osc_client.changeBpm(clock, bpm, 8)
+            clock = time.time_ns()
+            osc_client.changeBpm(clock, 180, 8)
 
             time.sleep(1 / sampling_rate)
