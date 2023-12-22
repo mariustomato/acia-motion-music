@@ -21,7 +21,11 @@ d.add(\h -> PathName ("C:/Users/fabia/Music/Lumina/Vula/Drums/high").entries.col
 );
 )
 
+<<<<<<< HEAD
 ~chooseRandomFrequency = { |values| values.choose };
+=======
+
+>>>>>>> 30276dec42561e534777e84773656c464474fbcd
 
 
 (
@@ -50,14 +54,23 @@ Pdef(
 	\sinepat,
 	Pbind(
 		\instrument, \sine,
+<<<<<<< HEAD
 		\dur, Pfunc { ~chooseRandomFrequency.value([0.9375, 1.875, 0.46875, 0.46875])}.trace,
 		\freq, Pfunc { ~chooseRandomFrequency.value([300, 400, 500, 600, 330, 440, 220, 550, ]) },
+=======
+		\dur, Pseq([1.875/2, 1.875, 1.875/4, 1.875/4], inf).trace,
+		\freq, Pexprand(200, 440, inf),
+>>>>>>> 30276dec42561e534777e84773656c464474fbcd
 		\atk, Pwhite(0.5, 1.0, inf),
 	\rel, Pwhite(0.5,1.0, inf),
 	\amp, Pexprand(0.01, 1, inf),
 	\pan, Pwhite(-08, 0.8, inf),
 	);
+<<<<<<< HEAD
 ).play(quant:1.875);
+=======
+).stop(quant:1.875);
+>>>>>>> 30276dec42561e534777e84773656c464474fbcd
 )
 
 (
@@ -65,7 +78,11 @@ Pdef(
 	\rhythm,
 	Pbind(
 		\instrument, \bufplay,
+<<<<<<< HEAD
 		\dur, Pseq([1/8], inf),
+=======
+		\dur, Pseq([1/9.5], inf),
+>>>>>>> 30276dec42561e534777e84773656c464474fbcd
 		\stretch, 1.875,
 		\buf, Prand(
 			[
@@ -87,7 +104,11 @@ Pdef(
 p = Pbind(
 	\instrument, \sine,
 	\dur, Pwhite(1, 2, inf),
+<<<<<<< HEAD
 	\freq, Pfunc { ~chooseRandomFrequency.value([300, 400, 500, 600, 440, 442, 550, ]) }.trace,
+=======
+	\freq, Pseq([440, 330, 300, 660, 200, 70, 140, 440, 110, 445, 442], inf).trace,
+>>>>>>> 30276dec42561e534777e84773656c464474fbcd
 	\atk, Pwhite(0.5, 3.0, inf),
 	\rel, Pwhite(1.0,10.0, inf),
 	\amp, Pexprand(0.01, 0.2, inf),
