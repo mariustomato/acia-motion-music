@@ -1,5 +1,5 @@
 import numpy as np
-from plain_bpm_detector import basic_detect_bpm
+from utils.plain_bpm_detector import basic_detect_bpm
 
 def generate_test_sequence(peak_height, sampling_rate, duration, peak_every_x_points):
     sequence = []

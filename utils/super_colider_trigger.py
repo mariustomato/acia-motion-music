@@ -7,7 +7,7 @@ from time import sleep
 sc_address = "127.0.0.1"
 sc_port = 57120
 
-# Create an OSC client
+# Create an OSC client.py
 client = udp_client.SimpleUDPClient(sc_address, sc_port)
 
 # Function to trigger the SuperCollider Synth
