@@ -1,8 +1,9 @@
-import time
+from datetime import datetime
 from listeners.simulated_listener import SimulatedListener
 from utils.peak_detection import real_time_peak_detection
 from utils.plain_bpm_detector import advanced_detect_bpm
 from utils.plain_bpm_detector import advanced_detect_bpm_capped
+from utils.client import Client
 
 THRESHOLD = 5  # the amount for a trigger (away from curr average
 LAG = 10
@@ -18,7 +19,8 @@ if __name__ == '__main__':
     for _ in range(LAG):
         lag_data.append(int(listeners[0].read()))
 
-    peak_detector = real_time_peak_detection(array=lag_data, lag=LAG, threshold=THREASHOLD, influence=2)
+    peak_detector = real_time_peak_detection(array=lag_data, lag=LAG, threshold=THRESHOLD, influence=2)
+
     sequence = []
     # TODO: adjust window size on hardware implementation
     window_size = 4
@@ -35,10 +37,10 @@ if __name__ == '__main__':
                 sequence = sequence[1:]
             sequence.append(val)
             bpm = advanced_detect_bpm_capped(sequence, sampling_rate, 80, sampling_rate * 10)
-            # print(f"Sequence: {sequence}")
+
             print(f"Detected BPM: {bpm}")
 
-            clock = time.current_time()
+            clock = datetime.now()
             osc_client.changeBpm(clock, bpm, 8)
 
             time.sleep(1 / sampling_rate)
