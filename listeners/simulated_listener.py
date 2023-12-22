@@ -15,27 +15,7 @@ class SimulatedListener(Listener):
             int: Der generierte Wert
         """
         # Konfiguration der Peaks
-        peak_interval = 190  # Zeitintervall in ms
-        peak_width = 10  # Breite der Peaks in ms
-        peak_height = 100  # Höhe der Peaks
-
-
-        if((time.time()*100)%peak_interval<=peak_width):
-            return peak_height
-
-        return 0
-
-
-    def read_2(self):
-        """
-        Generiert bei Aufruf der Funktion in bestimmten Zeitintervallen peakartige Werte,
-        ansonsten den Wert 0.
-
-        Returns:
-            int: Der generierte Wert
-        """
-        # Konfiguration der Peaks
-        peak_interval = 380  # Zeitintervall in ms
+        peak_interval = 640  # Zeitintervall in ms
         peak_width = 10  # Breite der Peaks in ms
         peak_height = 100  # Höhe der Peaks
 
