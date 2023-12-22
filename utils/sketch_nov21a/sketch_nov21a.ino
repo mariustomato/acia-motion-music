@@ -10,7 +10,7 @@
 //}
 //
 //void loop() {
-//  // Read the sensor value
+//  // Read the sensor value7
 //  while (!Serial.available()); 
 //  int sensorValue = analogRead(sensorPin);
 //

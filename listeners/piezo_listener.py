@@ -18,5 +18,5 @@ class PiezoListener(Listener):
             self.com.write(bytes("TRIG:IMM", 'utf-8'))
 
             data = self.com.readline()
-        print(data)
+
         return data.decode().replace("\r\n", "")

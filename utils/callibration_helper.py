@@ -39,7 +39,7 @@ class CallibrationHelper:
         values1 = []
         values2 = []
 
-        DELTA=0.01 #in seconds
+        DELTA=0.0001 #in seconds
         DISPLAYSEONDS=5 # in seconds
 
 
@@ -75,9 +75,9 @@ class CallibrationHelper:
             values1.append(val1)
             values2.append(val2)
 
-            #if (start<time.time()+DISPLAYSEONDS):
-            #   values1.pop(0)
-            #   values2.pop(0)
+            if (start+DISPLAYSEONDS<time.time()):
+               values1.pop(0)
+               values2.pop(0)
 
             # Update data of both lines
             line1.set_data(range(len(values1)), values1)
