@@ -7,5 +7,5 @@ class Client:
         self.port = 57120
         self.client = udp_client.SimpleUDPClient(self.ip, self.port)
 
-    def changeBpm(self, clock, bpm, number):
-        self.client.send_message("/changeBpm", [clock, bpm, number])
+    def tempoChange(self, clock, bpm, number):
+        self.client.send_message("/tempoChange", [clock, bpm, number])
