@@ -1,5 +1,6 @@
 import time
 from datetime import datetime
+import time
 from listeners.simulated_listener import SimulatedListener
 from utils.client import Client
 from utils.peak_detection import real_time_peak_detection
@@ -37,11 +38,11 @@ if __name__ == '__main__':
             if len(sequence) == sampling_rate * 60:
                 sequence = sequence[1:]
             sequence.append(val)
-            bpm = advanced_detect_bpm_capped(sequence, sampling_rate, 80, sampling_rate * 10)
+            bpm = advanced_detect_bpm_capped(sequence, sampling_rate, PEAK_VAL, sampling_rate * 10)
 
             print(f"Detected BPM: {bpm}")
 
-            clock = 0
-            osc_client.tempoChange(clock, 180/60, 8)
+            clock = datetime.now()
+            # osc_client.tempoChange(clock, bpm, 8)
 
             time.sleep(1 / sampling_rate)
