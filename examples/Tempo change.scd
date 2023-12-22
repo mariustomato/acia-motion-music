@@ -1,6 +1,7 @@
 s.boot;
 Server.killAll;
 s.plotTree;
+
 (
 d = Dictionary.new;
 d.add(\l -> PathName ("C:/Users/fabia/Music/Lumina/Vula/Drums/low").entries.collect({ //Path change!
@@ -29,10 +30,10 @@ OSCdef(\changeFreq, { |msg, time, addr, recvPort|
 }, '/changeFreq');
 )
 
-
+/*
 (
 // OSCdef for changing BPM
-OSCdef(\changeBPM, { |msg, time, addr, recvPort|
+OSCFunc(\changeBPM, { |msg, time, addr, recvPort|
     var newBPM;
 	~bpmBus.set(newBPM);
 	newBPM = msg[3];
@@ -40,6 +41,22 @@ OSCdef(\changeBPM, { |msg, time, addr, recvPort|
     // Call the function to update Pdefs with the new BPM
     ~tempoChange.value(t, newBPM, 8);
 }, '/changeBPM');
+)
+*/
+
+(
+// Define the OSCFunc
+~tempoChangeOSC = OSCFunc({ |msg, time, addr, args|
+	// Check if the message matches the expected format
+	if (msg[1] == \tempoChange) {
+		// Extract parameters from the OSC message
+		var bpm = args[0].asFloat;
+		var numBeats = args[1].asInteger;
+
+		// Call the tempoChange function
+		~tempoChange.value(t, newTempo, numBeats);
+	}
+}, '/tempoChange');
 )
 
 
