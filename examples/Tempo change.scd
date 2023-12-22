@@ -54,7 +54,7 @@ OSCFunc(\changeBPM, { |msg, time, addr, recvPort|
 		var numBeats = args[1].asInteger;
 
 		// Call the tempoChange function
-		~tempoChange.value(t, newTempo, numBeats);
+		~tempoChange.value(t, bpm, numBeats);
 	}
 }, '/tempoChange');
 )
