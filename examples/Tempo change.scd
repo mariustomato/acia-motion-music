@@ -62,7 +62,7 @@ t = TempoClock.new(120/60).permanent_(true); //tempoClock for changing overall T
 	clock.schedAbs(clock.nextBar, {
 		clock.tempo_(tempoArray[i]);
 		i = i + 1;
-		if(i < numBeats) {1} {\done.postIn};
+		if(i < numBeats) {1} {\done.postln};
 	});
 };
 )
@@ -72,7 +72,7 @@ t = TempoClock.new(120/60).permanent_(true); //tempoClock for changing overall T
 t.schedAbs(t.nextBar, {~post.()});
 )*/
 
-~tempoChange.value(t, 140, 8); //test
+~tempoChange.value(t, 180, 8); //test
 /*
 (
 // Modify the Pdef for the sine pattern
