@@ -50,8 +50,8 @@ OSCFunc(\changeBPM, { |msg, time, addr, recvPort|
 	// Check if the message matches the expected format
 	if (msg[1] == \tempoChange) {
 		// Extract parameters from the OSC message
-		var bpm = args[0].asFloat;
-		var numBeats = args[1].asInteger;
+		var bpm = msg[2].asFloat;
+		var numBeats = msg[3].asInteger;
 
 		// Call the tempoChange function
 		~tempoChange.value(t, bpm, numBeats);
@@ -67,7 +67,7 @@ OSCFunc(\changeBPM, { |msg, time, addr, recvPort|
 ~bpmBus = Bus.control(s, 1); // Create a control bus for BPM
 ~bpmBus.set(60); // Set an initial BPM value
 
-t = TempoClock.new(120/60).permanent_(true); //tempoClock for changing overall Tempo
+t = TempoClock.new(100/60).permanent_(true); //tempoClock for changing overall Tempo
 
 //t.beats;
 
@@ -89,7 +89,7 @@ t = TempoClock.new(120/60).permanent_(true); //tempoClock for changing overall T
 t.schedAbs(t.nextBar, {~post.()});
 )*/
 
-~tempoChange.value(t, 180, 8); //test
+~tempoChange.value(t, 60, 8); //test
 /*
 (
 // Modify the Pdef for the sine pattern
@@ -135,7 +135,7 @@ Pdef(\sinepat_bpm, Pbind(
 // Define a Pdef "beat"
 Pdef(\rhythm_bpm, Pbind(
     \instrument, \bufplay,
-    \dur, 4, // BPM parameter
+    \dur, 0.5, // BPM parameter
     \stretch, 1.875,
     \buf, Prand([
         Prand(d[\l], 1),
