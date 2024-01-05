@@ -52,6 +52,6 @@ def random_zero_or_one():
 if __name__ == '__main__':
     data = create_training_data(160, 50000)
     # Convert data to JSON and write to a file
-    with open('../data/test_data.json', 'w') as file:
+    with open('../data/plain_data.json', 'w') as file:
         json.dump(data, file)
 
