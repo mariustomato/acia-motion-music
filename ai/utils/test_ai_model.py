@@ -5,20 +5,26 @@ from math import sqrt
 import numpy as np
 import json
 
-if __name__ == '__main__':
+
+def test_model(model_path):
     # Load the data back from the file
-    with open('../data/test_data_x.json', 'r') as file:
+    with open('./data/test_data_x.json', 'r') as file:
         x_train = np.array(json.load(file))
-    with open('../data/test_data_y.json', 'r') as file:
+    with open('./data/test_data_y.json', 'r') as file:
         y_train = np.array(json.load(file))
 
-    model = load_model('../models/lstm_20_activation_tanh_optimizer_adam_loss_mse_epochs_500.keras')
+    model = load_model(model_path + 'model.keras')
+
+    if model is None:
+        print('No model')
+        exit(1)
 
     # Predict BPM
     predicted_bpm = model.predict(x_train)
     mse = mean_squared_error(y_train, predicted_bpm.flatten())
-    print(mse)
-    print(sqrt(mse))
+    print('MSE: ' + str(mse))
+    print('Average off-value: ' + str(sqrt(mse)))
+
     conclusion = []
     for i in range(len(predicted_bpm)):
         prediction = predicted_bpm[i].item()
@@ -55,6 +61,6 @@ if __name__ == '__main__':
     plt.tight_layout()
 
     # Save the figure
-    plt.savefig('plot2.png', dpi=300)  # Saves the figure to a file named 'plot.png' with 300 dpi
+    plt.savefig(model_path + '/plot2.png', dpi=300)  # Saves the figure to a file named 'plot.png' with 300 dpi
 
     plt.show()  # This will display the plot
