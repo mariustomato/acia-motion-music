@@ -1,22 +1,28 @@
-from keras.models import Sequential, load_model
+from keras.models import Sequential
 from keras.layers import LSTM, Dense
-from sklearn.model_selection import train_test_split
 import numpy as np
 import json
+import datetime
+import os
+import matplotlib.pyplot as plt
 
-if __name__ == '__main__':
+
+def train_model(lstm_units=15, activation="tanh", optimizer="adam", loss="mse", epochs=10, lstm_layers=3, batch_size=64):
+    data_dir = './data'
+
+    if not os.path.exists(data_dir):
+        print("Data directory not found!")
+        exit(1)
+
+    print("Loading data...")
     # Load the data back from the file
-    with open('../data/train_data_x.json', 'r') as file:
+    with open('data/train_data_x.json', 'r') as file:
         x_train = np.array(json.load(file))
-    with open('../data/train_data_y.json', 'r') as file:
+    with open('data/train_data_y.json', 'r') as file:
         y_train = np.array(json.load(file))
 
-    lstm_units = 5
-    activation = 'tanh'
-    optimizer = 'adam'
-    loss = 'mse'
-    epochs = 20
-    lstm_layers = 1
+    print("Loading model finished!")
+    print("Starting to train model...")
 
     # Build the LSTM model
     model = Sequential()
@@ -27,16 +33,44 @@ if __name__ == '__main__':
         else:
             # Last layer only returns the last output
             model.add(LSTM(lstm_units, activation=activation, input_shape=(len(x_train[0]), 2)))
+
     model.add(Dense(1))
     model.compile(optimizer=optimizer, loss=loss)
 
     # Train the model using nextBPM as labels
-    history = model.fit(x_train, y_train, epochs=epochs, verbose=1)
+    history = model.fit(x_train, y_train, epochs=epochs, batch_size=batch_size, verbose=1)
 
-    with open('../data/history_1_layer_5_units.json', 'w') as file:
+    time_stamp = str(datetime.datetime.now().timestamp())
+    base_path = './models/' + time_stamp + '/'
+
+    os.makedirs(base_path, exist_ok=True)
+
+    model_configs = {
+        'units': lstm_units,
+        'layers': lstm_layers,
+        'activation': activation,
+        'optimizer': optimizer,
+        'epochs': epochs,
+        'batch_size': batch_size,
+        'loss': loss
+    }
+
+    with open(base_path + 'config.json', 'w') as file:
+        json.dump(model_configs, file)
+
+    with open(base_path + 'history.json', 'w') as file:
         json.dump(history.history, file)
 
     # Save model
-    model_name = 'lstm_units_' + str(lstm_units) + '_lstm_layers_' + str(lstm_layers) + '_activation_' + activation + '_optimizer_' + optimizer + '_loss_' + loss + '_epochs_' + str(epochs) + '.keras'
-    model.save('../models/' + model_name)
+    model.save(base_path + 'model.keras')
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(history.history['loss'], label='Training Loss')
+    plt.title('Training Loss over Epochs')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.legend()
+    plt.show()
+
+    return base_path
 

@@ -16,7 +16,7 @@ if __name__ == '__main__':
     # Train the model using nextBPM as labels
     history = model.fit(x_train, y_train, epochs=epochs, verbose=1)
 
-    with open('../data/history_model_15.json', 'w') as file:
+    with open('../stats/histories/history_model_15.json', 'w') as file:
         json.dump(history.history, file)
 
     # Save model

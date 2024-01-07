@@ -22,7 +22,7 @@ def create_training_data(dataAmount):
 
 
 def create_test_data(dataPointsPerSecond):
-    dataEntryLength = 420
+    dataEntryLength = 1000
     sizePrevBPM = random.randint(20, 80)
     sizeNextBPM = 100 - sizePrevBPM
     prevBPMArray = create_data_array(sizePrevBPM / 100 * dataEntryLength, dataPointsPerSecond)

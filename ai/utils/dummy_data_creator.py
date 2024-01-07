@@ -2,7 +2,7 @@ import random
 import json
 
 
-def create_training_data(dataPointsPerSecond, dataAmount):
+def create_training_data(dataPointsPerSecond=160, dataAmount=50_000):
     data = []
     counter = 0
     while counter < dataAmount:
@@ -10,7 +10,9 @@ def create_training_data(dataPointsPerSecond, dataAmount):
         if test_data is not None:
             data.append(test_data)
             counter += 1
-    return data
+    # Convert data to JSON and write to a file
+    with open('./data/plain_data.json', 'w') as file:
+        json.dump(data, file)
 
 
 def create_test_data(dataPointsPerSecond):
