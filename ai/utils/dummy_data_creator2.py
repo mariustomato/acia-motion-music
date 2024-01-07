@@ -1,25 +1,32 @@
 import random
 import json
+import os
 
 
-def create_training_data(dataPointsPerSecond, dataAmount):
+def create_training_data(dataAmount):
     data = []
     counter = 0
     while counter < dataAmount:
-        updated_data_points_per_second = random.randint(dataPointsPerSecond - 5, dataPointsPerSecond + 5)
-        test_data = create_test_data(dataPointsPerSecond)
+        test_data = create_test_data(160)
         if test_data is not None:
             data.append(test_data)
             counter += 1
-    return data
+
+    data_dir = './data'
+
+    if not os.path.exists(data_dir):
+        os.makedirs(data_dir)
+
+    with open(data_dir + '/plain_data.json', 'w') as file:
+        json.dump(data, file)
 
 
 def create_test_data(dataPointsPerSecond):
-    dataLengthInSeconds = random.randint(2, 4)
-    sizePrevBPM = random.randint(40, 60)
+    dataEntryLength = 420
+    sizePrevBPM = random.randint(20, 80)
     sizeNextBPM = 100 - sizePrevBPM
-    prevBPMArray = create_data_array(sizePrevBPM / 100 * dataLengthInSeconds, dataPointsPerSecond)
-    nextBPMArray = create_data_array(sizeNextBPM / 100 * dataLengthInSeconds, dataPointsPerSecond)
+    prevBPMArray = create_data_array(sizePrevBPM / 100 * dataEntryLength, dataPointsPerSecond)
+    nextBPMArray = create_data_array(sizeNextBPM / 100 * dataEntryLength, dataPointsPerSecond)
     prevBPM = get_bpm(prevBPMArray, dataPointsPerSecond)
     nextBPM = get_bpm(nextBPMArray, dataPointsPerSecond)
     if nextBPM == prevBPM == 0:
@@ -29,40 +36,29 @@ def create_test_data(dataPointsPerSecond):
 
 
 def create_data_array(size, dataPointsPerSecond):
-    arraySize = round(size * dataPointsPerSecond)
+    randBPMGoal = random.randint(39, 180)
+    randBPSGoal = (randBPMGoal / 60.0)
+    maxVariance = round(dataPointsPerSecond / 10)  # max. 100ms variance per "beat"
+    currVariance = random.randint(0, maxVariance)  # random variance between 0 and 100ms
+    nextOne = round(dataPointsPerSecond / randBPSGoal)
+    arraySize = round(size)
+    randStart = random.randint(1, 200)
     array = []
-    for _ in range(0, arraySize):
-        array.append(random_zero_or_one())
+    slidingNextOne = nextOne
+    for i in range(randStart, arraySize + randStart):
+        if (i % (slidingNextOne + currVariance)) == 0:
+            array.append(1)
+            currVariance = random.randint(0, maxVariance)  # generate new variance
+            slidingNextOne = nextOne + i
+        else:
+            array.append(0)
     return array
 
 
-def get_bpm(data, dataPointsPerSecond):
+def get_bpm(dataSeq, dataPointsPerSecond):
     spikes = 0
-    for i in range(0, len(data)):
-        if data[i] == 1:
+    for i in range(0, len(dataSeq)):
+        if dataSeq[i] == 1:
             spikes += 1
-    timespan = len(data) / dataPointsPerSecond
+    timespan = len(dataSeq) / dataPointsPerSecond
     return spikes / timespan * 60
-
-
-def random_zero_or_one():
-    perc = random.randint(0, 1)
-    return 1 if random.randint(1, 100) <= perc else 0
-
-
-if __name__ == '__main__':
-    data = create_training_data(160, 100_000)
-    # Convert data to JSON and write to a file
-    with open('../data/plain_data2.json', 'w') as file:
-        json.dump(data, file)
-
-    max_prev_bpm = max(item['prevBPM'] for item in data)
-    min_prev_bpm = min(item['prevBPM'] for item in data)
-    max_next_bpm = max(item['nextBPM'] for item in data)
-    min_next_bpm = min(item['nextBPM'] for item in data)
-
-    print("max_prev_bpm:", max_prev_bpm)
-    print("min_prev_bpm:", min_prev_bpm)
-    print("max_next_bpm:", max_next_bpm)
-    print("min_next_bpm:", min_next_bpm)
-
