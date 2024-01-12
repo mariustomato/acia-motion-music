@@ -1,6 +1,8 @@
 import time
 from datetime import datetime
 import time
+
+from listeners.com_listener import ComListener
 from listeners.simulated_listener import SimulatedListener
 from utils.client import Client
 from utils.peak_detection import real_time_peak_detection
@@ -15,7 +17,7 @@ PEAK_VAL = 80  # TODO: adjust peak value on hardware implementation
 
 if __name__ == '__main__':
     # TODO: change to hardware listener
-    listeners = [SimulatedListener()]
+    listeners = [ComListener()]
 
     # fill in lag
     lag_data = []
@@ -30,6 +32,12 @@ if __name__ == '__main__':
     sampling_rate = 100
     osc_client = Client()
 
+
+    start=time.time()
+
+    events=[]
+
+
     while True:
         for listener in listeners:
             # TODO: add peak detection
@@ -42,7 +50,10 @@ if __name__ == '__main__':
 
             print(f"Detected BPM: {bpm}")
 
-            clock = 0
-            osc_client.tempoChange(clock, 120/60, 8)
+            osc_client.tempoChange(120/60, 8)
 
-            time.sleep(1 / sampling_rate)
+    osc_client.stopAll()
+            #events.append((time.time_ns(),val))
+            #time.sleep(1 / sampling_rate)
+
+    #print(events)

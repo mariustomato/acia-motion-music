@@ -7,5 +7,11 @@ class Client:
         self.port = 57120
         self.client = udp_client.SimpleUDPClient(self.ip, self.port)
 
-    def tempoChange(self, clock, bpm, number):
-        self.client.send_message("/tempoChange", [bpm, number])
+    def tempoChange(self, bpm, number_beats=8):
+        self.client.send_message("/tempoChange", [bpm, number_beats])
+
+    def stopAll(self):
+        self.client.send_message("/stopAll",[])
+
+    def startAll(self):
+        self.client.send_message("/")
