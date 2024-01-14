@@ -12,8 +12,8 @@ from utils.client import Client
 
 THRESHOLD = 5  # the amount for a trigger (away from curr average
 LAG = 10
-INFLUENCE = 0.1  # value between [0,1]->no to full influence
-PEAK_VAL = 80  # TODO: adjust peak value on hardware implementation
+INFLUENCE = 0.8  # value between [0,1]->no to full influence
+PEAK_VAL = 1  # TODO: adjust peak value on hardware implementation
 
 if __name__ == '__main__':
     # TODO: change to hardware listener
@@ -29,28 +29,40 @@ if __name__ == '__main__':
     # TODO: adjust window size on hardware implementation
     window_size = 4
     # TODO: adjust sampling rate on hardware implementation
-    sampling_rate = 100
+    sampling_rate = 160
+
+    sampling_size= 1000
+
     osc_client = Client()
 
 
-    start=time.time()
-
-    events=[]
+    last_update=time.time()
 
 
     while True:
         for listener in listeners:
-            # TODO: add peak detection
+
+            sequence= np.full((1,sampling_size),0)
+
             val = int(listener.read())
+            val = peak_detector.thresholding_algo(val)
+
+            delta=last_update-time.time()
+            missed_samples
+
+
+
+
             # currently capping sequence length at 60 seconds
             if len(sequence) == sampling_rate * 60:
                 sequence = sequence[1:]
             sequence.append(val)
             bpm = advanced_detect_bpm_capped(sequence, sampling_rate, PEAK_VAL, sampling_rate * 10)
+            last_update=time.time()
+            if val>0 :
+                print(f"Detected BPM: {bpm} and val {val}")
 
-            print(f"Detected BPM: {bpm}")
-
-            osc_client.tempoChange(120/60, 8)
+            #osc_client.tempoChange(120/60, 8)
 
     osc_client.stopAll()
             #events.append((time.time_ns(),val))
