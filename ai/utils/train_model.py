@@ -63,6 +63,7 @@ def train_model(lstm_units=15, activation="tanh", optimizer="adam", loss="mse", 
 
     # Save model
     model.save(base_path + 'model.keras')
+    model.save(base_path + 'model.h5')
 
     plt.figure(figsize=(10, 6))
     plt.plot(history.history['loss'], label='Training Loss')
@@ -71,6 +72,8 @@ def train_model(lstm_units=15, activation="tanh", optimizer="adam", loss="mse", 
     plt.ylabel('Loss')
     plt.legend()
     plt.show()
+
+    plt.savefig(base_path + 'loss.png')
 
     return base_path
 

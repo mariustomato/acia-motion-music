@@ -53,14 +53,20 @@ def test_model(model_path):
     axs[1].plot(range(len(abs_diff)), abs_diff, 'g.', label='Abs Diff')  # Green points
     axs[1].set_title('Absolute Differences')
 
-    # Plotting Differences as a point plot for a more detailed view
-    axs[2].plot(abs_diff, 'g.')
-    axs[2].set_title('Absolute Differences (Point Plot)')
+    # Plotting the percentage for points with 5-100+ points difference in 5 steps
+    bins = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100]
+    bin_counts = np.histogram(abs_diff, bins=bins)[0]
+    percentages = (bin_counts / len(abs_diff)) * 100  # Convert counts to percentages
+    axs[2].bar(bins[:-1], percentages, width=4, align='edge', color='purple')
+    axs[2].set_xticks(bins)
+    axs[2].set_title('Percentage of Points by Difference Range')
+    axs[2].set_xlabel('Difference Range')
+    axs[2].set_ylabel('Percentage')
 
     # Display the plots
     plt.tight_layout()
 
     # Save the figure
-    plt.savefig(model_path + '/plot2.png', dpi=300)  # Saves the figure to a file named 'plot.png' with 300 dpi
+    plt.savefig(model_path + '/stats.png', dpi=300)  # Saves the figure to a file named 'plot.png' with 300 dpi
 
     plt.show()  # This will display the plot

@@ -1,6 +1,7 @@
 import random
 import json
 import os
+import scipy.signal as signal
 
 
 def create_training_data(dataAmount):
