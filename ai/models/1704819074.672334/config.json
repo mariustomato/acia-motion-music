@@ -1,0 +1,1 @@
+{"units": 1048, "layers": 1, "activation": "tanh", "optimizer": "adam", "epochs": 25, "batch_size": 64, "loss": "mse"}

@@ -4,8 +4,8 @@ import ai.utils.test_ai_model as test
 
 
 if __name__ == '__main__':
-    units = 15
-    epochs = 200
+    units = 1048
+    epochs = 25
     layers = 1
     activation = 'tanh'
 

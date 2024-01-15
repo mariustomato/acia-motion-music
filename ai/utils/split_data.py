@@ -1,6 +1,6 @@
 from keras.preprocessing.sequence import pad_sequences
 from sklearn.model_selection import train_test_split
-import ai.utils.dummy_data_creator as data
+import ai.utils.dummy_data_creator2 as data
 import numpy as np
 import json
 
