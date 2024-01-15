@@ -55,6 +55,14 @@ OSCdef(\changeBPM, { |msg, time, addr, recvPort|
 */
 
 
+~freqBus = Bus.control(s, 1);  // Create a control bus for frequency
+~freqBus.set(440);  // Set an initial frequency value
+
+~bpmBus = Bus.control(s, 1); // Create a control bus for BPM
+~bpmBus.set(60); // Set an initial BPM value
+
+
+//t.beats;
 
 (
 ~tempoChange = { |clock, newTempo, duration, onComplete|
@@ -158,7 +166,7 @@ Pdef(
         \rate, 1,
         \amp, Pseq([0.8, Pexprand(0.005,0.2,7)], inf),
     );
-).play(quant:1.875);
+).play(t,quant:1.875);
 )
 
 

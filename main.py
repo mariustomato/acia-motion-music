@@ -1,13 +1,9 @@
 import time
-from datetime import datetime
-import time
-
+import numpy as np
 from listeners.com_listener import ComListener
-from listeners.simulated_listener import SimulatedListener
-from utils.client import Client
+#import tensorflow.python.keras as keras ##does not load
+import keras ##loads
 from utils.peak_detection import real_time_peak_detection
-from utils.plain_bpm_detector import advanced_detect_bpm
-from utils.plain_bpm_detector import advanced_detect_bpm_capped
 from utils.client import Client
 
 THRESHOLD = 5  # the amount for a trigger (away from curr average
@@ -24,48 +20,35 @@ if __name__ == '__main__':
     for _ in range(LAG):
         lag_data.append(int(listeners[0].read()))
 
+    sampling_size = 1000
+    sequence = np.full((sampling_size, 2), 0)
     peak_detector = real_time_peak_detection(array=lag_data, lag=LAG, threshold=THRESHOLD, influence=2)
-    sequence = []
+
     # TODO: adjust window size on hardware implementation
     window_size = 4
     # TODO: adjust sampling rate on hardware implementation
     sampling_rate = 160
-
-    sampling_size= 1000
-
     osc_client = Client()
-
-
-    last_update=time.time()
-
+    last_update = time.time()
+    model = keras.models.load_model("./model.h5")
+    bpm=0
 
     while True:
         for listener in listeners:
 
-            sequence= np.full((1,sampling_size),0)
-
             val = int(listener.read())
             val = peak_detector.thresholding_algo(val)
 
-            delta=last_update-time.time()
-            missed_samples
+            sequence[:-1] = sequence[1:]
+            sequence[-1]=np.array([val, bpm])
+            print(sequence[-1])
+            bpm = model.predict(sequence)
 
+            #bpm = model. # advanced_detect_bpm_capped(sequence, sampling_rate, PEAK_VAL, sampling_rate * 10)
 
-
-
-            # currently capping sequence length at 60 seconds
-            if len(sequence) == sampling_rate * 60:
-                sequence = sequence[1:]
-            sequence.append(val)
-            bpm = advanced_detect_bpm_capped(sequence, sampling_rate, PEAK_VAL, sampling_rate * 10)
-            last_update=time.time()
-            if val>0 :
+            if val > 0:
                 print(f"Detected BPM: {bpm} and val {val}")
 
-            #osc_client.tempoChange(120/60, 8)
+            osc_client.tempoChange(bpm / 60, 4)
 
     osc_client.stopAll()
-            #events.append((time.time_ns(),val))
-            #time.sleep(1 / sampling_rate)
-
-    #print(events)
