@@ -3,7 +3,8 @@ import time
 # import tensorflow.python.keras as keras ##does not load
 import numpy as np
 
-from listeners.simulated_listener import SimulatedListener
+from listeners.com_listener import ComListener
+# from listeners.simulated_listener import SimulatedListener
 from utils.client import Client
 from utils.peak_detection import real_time_peak_detection
 from utils.plain_bpm_detector import advanced_detect_bpm_capped
@@ -15,7 +16,7 @@ PEAK_VAL = 1  # TODO: adjust peak value on hardware implementation
 
 if __name__ == '__main__':
     # TODO: change to hardware listener
-    listeners = [SimulatedListener()]
+    listeners = [ComListener()]
 
     # fill in lag
     lag_data = []
@@ -40,7 +41,6 @@ if __name__ == '__main__':
         for listener in listeners:
             # check if its time for an update
             if listener.last_update + sampling_time_diff > time.time():
-                print("skip")
                 continue
 
             # filling up the lost datapoints
@@ -56,11 +56,11 @@ if __name__ == '__main__':
             val = int(listener.read())
             val = peak_detector.thresholding_algo(val)
 
-            print(f"Lost singlas {lost_signals} with len of {len(sequence)}")
+            # print(f"Lost singlas {lost_signals} with len of {len(sequence)}")
 
             sequence[:-1] = sequence[1:]
             sequence[-1] = val
-            print(sequence[-1])
+            # print(sequence[-1])
             # bpm = model.predict(sequence)
 
             bpm = advanced_detect_bpm_capped(sequence, sampling_rate, PEAK_VAL, sampling_rate * 10)
