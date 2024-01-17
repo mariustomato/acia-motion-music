@@ -9,14 +9,16 @@ from utils.client import Client
 from utils.peak_detection import real_time_peak_detection
 from utils.plain_bpm_detector import advanced_detect_bpm_capped
 
-THRESHOLD = 5  # the amount for a trigger (away from curr average
+THRESHOLD = 5  # the amount for a trigger (away from curr average)
 LAG = 10
 INFLUENCE = 0.8  # value between [0,1]->no to full influence
 PEAK_VAL = 1  # TODO: adjust peak value on hardware implementation
+MAX_BPM = 200
 
 if __name__ == '__main__':
     # TODO: change to hardware listener
     listeners = [ComListener()]
+    PROGRAM_START = time.time()
 
     # fill in lag
     lag_data = []
@@ -33,7 +35,6 @@ if __name__ == '__main__':
     sampling_rate = 100  # per second
     sampling_time_diff = 1 / sampling_rate
     osc_client = Client()
-    last_update = time.time()
     # model = keras.models.load_model("./model.h5")
     bpm = 0
 
@@ -51,6 +52,12 @@ if __name__ == '__main__':
                 # Fill the start of the array with zeros
                 sequence[:lost_signals] = 0
                 listener.last_update = time.time()
+            # if in the last values is a peak (might produce else a duplicate
+            if 1 in sequence[-int(sampling_rate / (2 * (MAX_BPM / 60))):]:
+                sequence[:-1] = sequence[1:]
+                sequence[-1] = 0
+                listener.last_update = time.time()
+                continue
 
             # get new value
             val = int(listener.read())
@@ -66,7 +73,7 @@ if __name__ == '__main__':
             bpm = advanced_detect_bpm_capped(sequence, sampling_rate, PEAK_VAL, sampling_rate * 10)
 
             if val > 0:
-                print(f"Detected BPM: {bpm} and val {val}")
+                print(f"{PROGRAM_START - time.time()}s- Detected BPM: {bpm} and val {val}")
 
             osc_client.tempoChange(bpm / 60, 4)
 

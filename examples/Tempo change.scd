@@ -39,14 +39,14 @@ OSCdef(\stopSynth, { |msg, time, addr, recvPort|
 OSCdef(\changeBPM, { |msg, time, addr, recvPort|
     var newBPM, numBeats;
 	newBPM = msg[1];
-	numBeats= msg[2];
+	duration= msg[2];
 
 	~bpmBus.set(newBPM);
 
 	("About to change to: "+newBPM).postln;
 
     // Call the function to update Pdefs with the new BPM
-    ~tempoChange.value(t, newBPM, numBeats);
+    ~tempoChange.value(t, newBPM, duration);
 }, '/tempoChange');
 )
 
