@@ -37,7 +37,7 @@ OSCdef(\stopSynth, { |msg, time, addr, recvPort|
 
 // OSCdef for changing BPM
 OSCdef(\changeBPM, { |msg, time, addr, recvPort|
-    var newBPM, numBeats;
+    var newBPM, duration;
 	newBPM = msg[1];
 	duration= msg[2];
 
