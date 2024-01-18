@@ -5,7 +5,8 @@ from listeners.abstract_listener import Listener
 
 
 class ComListener(Listener):
-	def __init__(self):
+	def __init__(self,sampling_size=1000, max_bpm=200, sampling_rate=100):
+		super().__init__(sampling_size=1000, max_bpm=200, sampling_rate=100)
 		self.com = serial.Serial(port='COM6', baudrate=9600, timeout=.1,write_timeout=0)
 	def read(self):
 		self.com.flush()
