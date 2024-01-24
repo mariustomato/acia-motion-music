@@ -105,7 +105,7 @@ Pdef(\rhythm_bpm).quant_(1.875).add;
 SynthDef.new(\sine, {
     arg freqBus, atk=0.005, rel=0.3, amp=1, pan=0;
     var sig, env, freq;
-    freq = In.kr(freqBus, 1); // Read frequency from control bus
+    freq = 440; // Read frequency from control bus
     sig = SinOsc.ar(freq);
     env = EnvGen.kr(Env.new([0,1,0],[atk,rel],[1,-1]),doneAction:2);
     sig = Pan2.ar(sig, pan, amp);
@@ -127,8 +127,17 @@ SynthDef.new(\bufplay, {
 Pdef(\sinepat_bpm, Pbind(
     \instrument, \sine,
     \dur, 1,  // BPM parameter
-    \freqBus, 440,
+	\freq, Pseq(440, 400, 460, 415),
     \atk, Pwhite(0.1, 0.2, inf),
+    \rel, Pwhite(0.1, 0.2, inf),
+    \amp, Pexprand(0.1, 1, inf),
+    \pan, Pwhite(-0.8, 0.8, inf),
+		)).play(t, quant: Quant(4));
+Pdef(\bass, Pbind(
+	\instrument, \sine,
+	\dur, 2,
+	\freq, Pseq(220,165),
+	\atk, Pwhite(0.1, 0.2, inf),
     \rel, Pwhite(0.1, 0.2, inf),
     \amp, Pexprand(0.1, 1, inf),
     \pan, Pwhite(-0.8, 0.8, inf),
