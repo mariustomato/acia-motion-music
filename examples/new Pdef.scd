@@ -61,10 +61,10 @@ OSCFunc(\changeBPM, { |msg, time, addr, recvPort|
 )
 
 
-/*
+
 ~freqBus = Bus.control(s, 1);  // Create a control bus for frequency
 ~freqBus.set(440);  // Set an initial frequency value
-
+/*
 ~bpmBus = Bus.control(s, 1); // Create a control bus for BPM
 ~bpmBus.set(60); // Set an initial BPM value
 */
@@ -102,10 +102,11 @@ Pdef(\rhythm_bpm).quant_(1.875).add;
 )
 */
 (
-SynthDef.new(\sine, {
-    arg freqBus, atk=0.005, rel=0.3, amp=1, pan=0;
-    var sig, env, freq;
-    freq = 440; // Read frequency from control bus
+// SynthDefs
+SynthDef(\sine, {
+    arg freq = 440, dur = 1, atk = 0.1, rel = 0.1, amp = 0.1, pan = 0;
+
+    var env, sig;
     sig = SinOsc.ar(freq);
     env = EnvGen.kr(Env.new([0,1,0],[atk,rel],[1,-1]),doneAction:2);
     sig = Pan2.ar(sig, pan, amp);
@@ -113,8 +114,9 @@ SynthDef.new(\sine, {
     Out.ar(0, sig);
 }).add;
 
+
 SynthDef.new(\bufplay, {
-    arg buf=0, rate =1, amp=1;
+    arg buf=0, rate=1, amp=1;
     var sig;
     sig = PlayBuf.ar(2, buf, BufRateScale.ir(buf) * rate, doneAction: 2);
     sig = sig * amp;
@@ -123,41 +125,51 @@ SynthDef.new(\bufplay, {
 )
 
 (
-// Define a Pdef "notes"
+// Patterns
+// Define a Pdef "sinepat_bpm"
 Pdef(\sinepat_bpm, Pbind(
     \instrument, \sine,
+	\dur, Prand([1,0.5],inf),  // BPM parameter
+	\freq, Pseq([Prand([440, 277, 554, 659, 329, 392],2), Prand([460, 415, 329, 587],2)], inf),
+    \atk, Pwhite(0.1, 0.2, inf),
+    \rel, Pwhite(0.1, 0.5, inf),
+    \amp, Pexprand(0.1, 1, inf),
+    \pan, Pwhite(-2, 1, inf),
+)).play(t, quant: Quant(4));
+
+Pdef(\sinepat_bpm2, Pbind(
+    \instrument, \sine,
     \dur, 1,  // BPM parameter
-	\freq, Pseq(440, 400, 460, 415),
+	\freq, Pseq([Prand([440, 277, 554, 659, 329, 392],2), Prand([460, 415, 329, 587],2)], inf),
     \atk, Pwhite(0.1, 0.2, inf),
     \rel, Pwhite(0.1, 0.2, inf),
     \amp, Pexprand(0.1, 1, inf),
     \pan, Pwhite(-0.8, 0.8, inf),
-		)).play(t, quant: Quant(4));
-Pdef(\bass, Pbind(
-	\instrument, \sine,
-	\dur, 2,
-	\freq, Pseq(220,165),
-	\atk, Pwhite(0.1, 0.2, inf),
-    \rel, Pwhite(0.1, 0.2, inf),
-    \amp, Pexprand(0.1, 1, inf),
-    \pan, Pwhite(-0.8, 0.8, inf),
-		)).play(t, quant: Quant(4));
+)).play(t, quant: Quant(4));
 
-// Define a Pdef "beat"
+// Define a Pdef "bass"
+Pdef(\bass, Pbind(
+    \instrument, \sine,
+    \dur, 1,
+    \freq, Pseq([220, 220, 165, 165], inf),
+    \atk, Pwhite(0.1, 0.4, inf),
+    \rel, Pwhite(1, 1,2, inf),
+    \amp, Pexprand(0.1, 1, inf),
+    \pan, Pwhite(-0.8, 1, inf),
+)).play(t, quant: Quant(4));
+
+// Define a Pdef "rhythm_bpm"
 Pdef(\rhythm_bpm, Pbind(
     \instrument, \bufplay,
     \dur, 0.5, // BPM parameter
     \stretch, 1.875,
     \buf, Prand([
-        Prand(d[\l], 1),
+        Prand([d[\l]], 1),
         Prand(d[\h]++d[\m]++d[\l], 7),
-        Prand(d[\h], 1),
+        Prand([d[\h]], 1),
         Prand(d[\h]++d[\m]++d[\l], 7),
     ], inf),
     \rate, 1,
     \amp, Pseq([0.8, Pexprand(0.005, 0.2, 7)], inf),
 )).play(t, quant: Quant(4));
 )
-
-
-
