@@ -14,7 +14,10 @@ SAMPLING_RATE = 100
 
 if __name__ == '__main__':
     # TODO: change to hardware listener
-    listeners = [ComListener(sampling_size=SAMPLING_SIZE, max_bpm=MAX_BPM, sampling_rate=SAMPLING_RATE)]
+    listeners = [
+        ComListener(com_port='COM6', sampling_size=SAMPLING_SIZE, max_bpm=MAX_BPM, sampling_rate=SAMPLING_RATE),
+    ]
+
     PROGRAM_START = time.time()
 
     window_size = 4
@@ -24,6 +27,7 @@ if __name__ == '__main__':
     bpm = 0
 
     while True:
+        bpm = 0  # will be set to current highest bpm of all listeners
         for listener in listeners:
             # stop "overclocking"
             if listener.last_update + sampling_time_diff > time.time():
@@ -42,11 +46,12 @@ if __name__ == '__main__':
 
             listener.updateSequence(val)
 
-            bpm = advanced_detect_bpm_capped(listener.sequence, SAMPLING_RATE, PEAK_VAL, SAMPLING_RATE * 10)
+            tmp = advanced_detect_bpm_capped(listener.sequence, SAMPLING_RATE, PEAK_VAL, SAMPLING_RATE * 10)
+            if tmp > bpm: bpm = tmp  # choose biggest bpm of all listeners
 
-            if val > 0:
+            if val > 0:  # print new value if peak was detected
                 print(f"{PROGRAM_START - time.time()}s- Detected BPM: {bpm} and val {val}")
 
-            osc_client.tempoChange(bpm / 60, 4)
+        osc_client.tempoChange(bpm / 60, 4)
 
     osc_client.stopAll()
