@@ -21,19 +21,12 @@ d.add(\h -> PathName ("C:/Users/fabia/Desktop/Dev/acia-motion-music/Samples/high
     Buffer.read(s, sf.fullPath);
 });
 );
-d.add(\n -> PathName ("C:/Users/fabia/Desktop/Dev/acia-motion-music/Samples/niente").entries.collect({ //Path change!
-    arg sf;
-    Buffer.read(s, sf.fullPath);
-});
-);
-)
-(
-// OSCdef for changing frequency
-OSCdef(\changeFreq, { |msg, time, addr, recvPort|
-    var newFreq;
-    newFreq = msg[1];
-    ~freqBus.set(newFreq);
-}, '/changeFreq');
+
+d.keys.do{arg key;
+	d[key].do{ arg file;
+		file.postln;
+	};
+};
 )
 
 /*
@@ -52,18 +45,18 @@ OSCFunc(\changeBPM, { |msg, time, addr, recvPort|
 
 (
 // Define the OSCFunc
-~tempoChangeOSC = OSCFunc({ |msg, time, addr, args|
+~tempoChangeOSC = OSCFunc({ |msg, time, addr, recvPart|
 	// Check if the message matches the expected format
-	if (msg[1] == \tempoChange) {
-		// Extract parameters from the OSC message
-		//var time = msg[1].asInteger;
-		var bpm = msg[2].asFloat;
-		var numBeats = msg[3].asInteger;
+	// Extract parameters from the OSC message
+	//var time = msg[1].asInteger;
+	var bpm = msg[1].asFloat;
+	var numBeats = msg[2].asInteger;
+	//msg.postln;
 
-		// Call the tempoChange function
-		~tempoChange.value(t, bpm, numBeats);
-	}
-}, '/tempoChange');
+	// Call the tempoChange function
+	~tempoChange.value(t, bpm, numBeats);
+
+}, '/tempoChange', recvPort: 57120);
 
 )
 
@@ -99,7 +92,7 @@ t = TempoClock.new(100/60).permanent_(true); //tempoClock for changing overall T
 t.schedAbs(t.nextBar, {~post.()});
 )*/
 
-~tempoChange.value(t, 240, 8); //test
+~tempoChange.value(t, 180, 8); //test
 /*
 (
 // Modify the Pdef for the sine pattern
@@ -128,7 +121,7 @@ SynthDef(\sawtooth, {
 
     var env, sig;
     sig = Saw.ar(freq);
-    env = EnvGen.kr(Env.new([0, 0.5, 0], [atk, rel], [1, -1]), doneAction: 2);
+    env = EnvGen.kr(Env.new([0, 0.5, 0.2, 0.1, 0], [atk, rel], [1, -1]), doneAction: 2);
     sig = Pan2.ar(sig, pan, amp);
     sig = sig * env;
     Out.ar(0, sig);
@@ -161,6 +154,32 @@ SynthDef(\pulseTest, {
 )
 
 (
+Pdef(\rhythm_bpm, Pbind(
+    \instrument, \bufplay,
+	\dur, Pseq([1,0.5,0.5,1,Prand([Pseq([0.5,0.5],1),Pseq([0.75, 0.25],1)],1)],inf), // BPM parameter
+    \stretch, 1.875,
+	\buf, Pseq([d[\l],Prand([d[\m],d[\h],\rest],1), Prand([d[\m],d[\h],\rest],1), Prand([d[\l],d[\m],d[\h]],1),Prand([d[\m],d[\h],\rest],1), Prand([d[\m],d[\h],\rest],1)], inf),
+    \rate, 1,
+	\amp, Pseq([Pexprand(0.1, 0.5,1), Pexprand(0.005, 0.2, 2)], inf),
+)).play(t, quant: Quant(1));
+
+Pdef(\bass, Pbind(
+    \instrument, \sawtooth,
+	\dur, Pseq([1,1,1,1],inf),
+	\freq, Pseq([110,110,110,110,146.83,146.83,146.83,146.83,146.83],inf),
+    \atk, Pwhite(0.001, 0.002, inf),
+    \rel, Pwhite(0.1,0.4, inf),
+	\amp, Pseq([Pexprand(0.6,0.98,inf),Pexprand(0.001,0.2,inf),Pexprand(0.6,0.98,inf),Pexprand(0,0.2,inf)],inf),
+    \pan, Pwhite(-0.8, 0.8, inf),
+
+)).play(t, quant: Quant(1));
+
+)
+
+
+
+
+(
 
 /*Pdef(\my_pulse_pattern, Pbind(
     \instrument, \pulseTest,
@@ -172,49 +191,50 @@ SynthDef(\pulseTest, {
 )).play(t, quant: Quant(4));
 */
 // Patterns
-// Define a Pdef "sinepat_bpm"
-/*Pdef(\sinepat_bpm, Pbind(
-    \instrument, \sine,
-	\dur, Prand([1,2],inf),  // BPM parameter
-	\freq, Pseq([Prand([440, 493.883, 554.365, 659.255, 739.989, 440, 415.305],2), Prand([415.305, 493.883, 554.365, 659.255, 739.9898],2)], inf),
-    \atk, Pwhite(0.01, 0.79, inf),
-    \rel, Pwhite(0.1, 1.001, inf),
-	\amp, Prand([0, 0.4], inf),
-    \pan, Pwhite(-0.8, 0.8, inf),
-	\doneAction, 2, //wichtig?
-)).play(t, quant: Quant(4));
 
-Pdef(\sinepat_bpm2, Pbind(
-    \instrument, \sawtooth,
-    \dur, 4,  // BPM parameter
-	\freq, Pseq([Prand([440, 277, 554, 659, 329, 392],2), Prand([460, 415, 329, 587],2)], inf),
-    \atk, Pwhite(1, 1.1, inf),
-    \rel, Pwhite(1, 2, inf),
-	\amp, Pseq([0.001,0.01,0,0,0,0,0,Prand([0,0.01],2),0.01,0], inf),
+// Define a Pdef "sinepat_bpm"
+Pdef(\sinepat_bpm, Pbind(
+    \instrument, \sine,
+	\dur, Prand([0.5,1,0.75],inf),  // BPM parameter
+	\freq, Prand([Pseq([293.66,329.62,293.66,261.62,Pseq([\rest,261.62],4)]),Pseq([587.33,659.25,587.33,523.25],1), Pseq([783.99,698.45,659.25],1),Pseq([\rest,440],3),Pseq([Pseq([783.99, 830.60],3),Prand([Pseq([1046.50,987.76,1046.50,1174.66,1174.66,880],1),Pseq([698.45,659.25,622.25,587.33,554.36,523.25],1)]),1],1)],inf),
+    \atk, Pwhite(0.01, 0.2, inf),
+    \rel, Pwhite(0.001, 0.2, inf),
+	\amp, Prand([0, 0.5], inf),
     \pan, Pwhite(-0.8, 0.8, inf),
-	\doneAction, 2, //wichtig?
-)).play(t, quant: Quant(1));*/
+)).play(t, quant: Quant(0.5));
 
 // Define a Pdef "bass"
-Pdef(\bass, Pbind(
+/*Pdef(\bass, Pbind(
     \instrument, \sawtooth,
 	\dur, Pseq([Prand([2,1],1),2,2,2],inf),
-	\freq, Pseq([Prand([55,65.40],1), Prand([43.65,73.41],1), Prand([41.20, 48.99, 61,73],2),Prand([55, 65.40],1), Prand([73.41,87.30],1),Prand([41.20, 48.99],2)], inf),
-    \atk, Pwhite(0.1, 0.2, inf),
+	\freq, Pseq([Prand([110,65.40],1), Prand([43.65,73.41],1), Prand([41.20, 48.99, 61,73],2),Prand([55, 65.40],1), Prand([73.41,87.30],1),Prand([41.20, 48.99],2)], inf),
+    \atk, Pwhite(0.001, 0.002, inf),
     \rel, Pwhite(0.1,0.4, inf),
 	\amp, Pseq([Pexprand(0.6,0.98,inf),Pexprand(0.001,0.2,inf),Pexprand(0.6,0.98,inf),Pexprand(0,0.2,inf)],inf),
     \pan, Pwhite(-0.8, 0.8, inf),
 
-)).play(t, quant: Quant(4));
+)).play(t, quant: Quant(1));
+*/
+Pdef(\bass, Pbind(
+    \instrument, \sawtooth,
+	\dur, Prand([Pseq([Prand([2,1],1),2,2,2],1),Pseq([0.5,0.5,0.5,0.5],2)],inf),
+	\freq, Prand([Pseq([Prand([110,65.40,\rest],1), Prand([43.65,73.41,\rest],1), Prand([41.20, 48.99, 61,73],2),Prand([55, 65.40],1), Prand([73.41,87.30],1),Prand([41.20, 48.99],2)], 1),Pseq([110,110,110,110,146.83,146.83,146.83,146.83,146.83],3)],inf),
+    \atk, Pwhite(0.001, 0.002, inf),
+    \rel, Pwhite(0.1,0.4, inf),
+	\amp, Pseq([Pexprand(0.2,0.3,inf),Pexprand(0.001,0.2,inf),Pexprand(0.6,0.98,inf),Pexprand(0,0.2,inf)],inf),
+    \pan, Pwhite(-0.8, 0.8, inf),
 
+)).play(t, quant: Quant(1));
+
+
+//Rest
 // Define a Pdef "rhythm_bpm"
 Pdef(\rhythm_bpm, Pbind(
     \instrument, \bufplay,
-	\dur, Pseq([1,0.5,0.5,1,0.5,0.5],inf), // BPM parameter
+	\dur, Pseq([1,0.5,0.5,1,Prand([Pseq([0.5,0.5],1),Pseq([0.75, 0.25],1)],1)],inf), // BPM parameter
     \stretch, 1.875,
-	\buf, Pseq([d[\l],Prand([d[\m],d[\h],d[\n]],1), Prand([d[\m],d[\h],d[\n]],1), Prand([d[\l],d[\m],d[\h]],1),Prand([d[\m],d[\h],d[\n]],1), Prand([d[\m],d[\h],d[\n]],1)], inf),
+	\buf, Pseq([d[\l],Prand([d[\m],d[\h],\rest],1), Prand([d[\m],d[\h],\rest],1), Prand([d[\l],d[\m],d[\h]],1),Prand([d[\m],d[\h],\rest],1), Prand([d[\m],d[\h],\rest],1)], inf),
     \rate, 1,
 	\amp, Pseq([Pexprand(0.1, 0.5,1), Pexprand(0.005, 0.2, 2)], inf),
-	\doneAction, 2, //wichtig?
 )).play(t, quant: Quant(1));
 )

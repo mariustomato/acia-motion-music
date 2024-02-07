@@ -10,5 +10,5 @@ void loop()
 {
   //if(!Serial.available()); 
   int sensorValue=analogRead(sensorPin); //Connect the analog piezoelectric ceramic vibration sensor to analog interface 0
-  Serial.println(sensorValue);//Print the analog value read via serial port
+  Serial.println(sensorValue>20?sensorValue:0);//Print the analog value read via serial port
 }

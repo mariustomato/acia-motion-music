@@ -1,0 +1,6 @@
+{
+    "port": "COM5",
+    "board": "arduino:mbed_nano:nanorp2040connect",
+    "programmer": "cmsis-dap",
+    "sketch": "utils\\arduino_blt\\arduino_blt.ino"
+}
