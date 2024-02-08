@@ -7,7 +7,7 @@ import os
 import matplotlib.pyplot as plt
 
 
-def train_model(lstm_units=15, activation="tanh", optimizer="adam", loss="mse", epochs=10, lstm_layers=3, batch_size=64):
+def train(lstm_units=15, activation="tanh", optimizer="adam", loss="mse", epochs=10, lstm_layers=3):
     data_dir = './data'
 
     if not os.path.exists(data_dir):
@@ -21,24 +21,24 @@ def train_model(lstm_units=15, activation="tanh", optimizer="adam", loss="mse", 
     with open('data/train_data_y.json', 'r') as file:
         y_train = np.array(json.load(file))
 
-    print("Loading model finished!")
+    print("Loading data finished!")
     print("Starting to train model...")
+
+    ############################### MODEL ###############################
 
     # Build the LSTM model
     model = Sequential()
-    for i in range(lstm_layers):
-        if i < lstm_layers - 1:
-            # All layers except the last one return full sequences
-            model.add(LSTM(lstm_units, activation=activation, return_sequences=True, input_shape=(len(x_train[0]), 2)))
-        else:
-            # Last layer only returns the last output
-            model.add(LSTM(lstm_units, activation=activation, input_shape=(len(x_train[0]), 2)))
-
+    #for i in range(lstm_layers - 1):
+        # All layers except the last one return full sequences
+        #model.add(LSTM(lstm_units, activation=activation, return_sequences=True, input_shape=(len(x_train[0]), 1)))
+    model.add(LSTM(lstm_units, activation=activation, input_shape=(len(x_train[0]), 1)))
     model.add(Dense(1))
-    model.compile(optimizer=optimizer, loss=loss)
+    model.compile(optimizer=optimizer, loss=loss, metrics=['accuracy'])
 
     # Train the model using nextBPM as labels
-    history = model.fit(x_train, y_train, epochs=epochs, batch_size=batch_size, verbose=1)
+    history = model.fit(x_train.reshape(-1, len(x_train[0]), 1), y_train, epochs=epochs, verbose=2, validation_split=0.2)
+
+    #####################################################################
 
     time_stamp = str(datetime.datetime.now().timestamp())
     base_path = './models/' + time_stamp + '/'
@@ -51,7 +51,6 @@ def train_model(lstm_units=15, activation="tanh", optimizer="adam", loss="mse", 
         'activation': activation,
         'optimizer': optimizer,
         'epochs': epochs,
-        'batch_size': batch_size,
         'loss': loss
     }
 
@@ -71,9 +70,10 @@ def train_model(lstm_units=15, activation="tanh", optimizer="adam", loss="mse", 
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.legend()
-    plt.show()
 
     plt.savefig(base_path + 'loss.png')
+
+    plt.show()
 
     return base_path
 

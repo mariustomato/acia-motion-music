@@ -42,6 +42,6 @@ if __name__ == '__main__':
             print(f"Detected BPM: {bpm}")
 
             clock = datetime.now()
-            osc_client.tempoChange(clock, bpm/60, 8)
+            osc_client.tempo_change(clock, bpm / 60, 8)
 
             time.sleep(1 / sampling_rate)
