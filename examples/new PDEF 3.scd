@@ -3,6 +3,10 @@ Server.killAll;
 s.plotTree;
 s.meter;
 
+ServerOptions.devices;//first to check name
+
+s.options.device = "hdmi_ausgang_hier_einsetzen";
+
 
 (
 d = Dictionary.new;
@@ -45,7 +49,7 @@ OSCFunc(\changeBPM, { |msg, time, addr, recvPort|
 
 (
 // Define the OSCFunc
-~tempoChangeOSC = OSCFunc({ |msg, time, addr, recvPart|
+~tempoChangeOSC = OSCFunc({ |msg, time, addr, recvPort|
 	// Check if the message matches the expected format
 	// Extract parameters from the OSC message
 	//var time = msg[1].asInteger;
@@ -195,11 +199,11 @@ Pdef(\bass, Pbind(
 // Define a Pdef "sinepat_bpm"
 Pdef(\sinepat_bpm, Pbind(
     \instrument, \sine,
-	\dur, Prand([0.5,1,0.75],inf),  // BPM parameter
+	\dur, 0.5,  // BPM parameter
 	\freq, Prand([Pseq([293.66,329.62,293.66,261.62,Pseq([\rest,261.62],4)]),Pseq([587.33,659.25,587.33,523.25],1), Pseq([783.99,698.45,659.25],1),Pseq([\rest,440],3),Pseq([Pseq([783.99, 830.60],3),Prand([Pseq([1046.50,987.76,1046.50,1174.66,1174.66,880],1),Pseq([698.45,659.25,622.25,587.33,554.36,523.25],1)]),1],1)],inf),
-    \atk, Pwhite(0.01, 0.2, inf),
-    \rel, Pwhite(0.001, 0.2, inf),
-	\amp, Prand([0, 0.5], inf),
+    \atk, Pwhite(0.1, 0.2, inf),
+    \rel, Pwhite(0.1, 0.3, inf),
+	\amp, Prand([0, 0.4], inf),
     \pan, Pwhite(-0.8, 0.8, inf),
 )).play(t, quant: Quant(0.5));
 
@@ -217,11 +221,11 @@ Pdef(\sinepat_bpm, Pbind(
 */
 Pdef(\bass, Pbind(
     \instrument, \sawtooth,
-	\dur, Prand([Pseq([Prand([2,1],1),2,2,2],1),Pseq([0.5,0.5,0.5,0.5],2)],inf),
+	\dur, 1,
 	\freq, Prand([Pseq([Prand([110,65.40,\rest],1), Prand([43.65,73.41,\rest],1), Prand([41.20, 48.99, 61,73],2),Prand([55, 65.40],1), Prand([73.41,87.30],1),Prand([41.20, 48.99],2)], 1),Pseq([110,110,110,110,146.83,146.83,146.83,146.83,146.83],3)],inf),
-    \atk, Pwhite(0.001, 0.002, inf),
-    \rel, Pwhite(0.1,0.4, inf),
-	\amp, Pseq([Pexprand(0.2,0.3,inf),Pexprand(0.001,0.2,inf),Pexprand(0.6,0.98,inf),Pexprand(0,0.2,inf)],inf),
+    \atk, Pwhite(0.01, 0.2, inf),
+    \rel, Pwhite(0.1,0.5, inf),
+	\amp, Pseq([Pexprand(0.1,0.23,inf),Pexprand(0.001,0.2,inf),Pexprand(0.06,0.098,inf),Pexprand(0,0.2,inf)],inf),
     \pan, Pwhite(-0.8, 0.8, inf),
 
 )).play(t, quant: Quant(1));
@@ -231,7 +235,7 @@ Pdef(\bass, Pbind(
 // Define a Pdef "rhythm_bpm"
 Pdef(\rhythm_bpm, Pbind(
     \instrument, \bufplay,
-	\dur, Pseq([1,0.5,0.5,1,Prand([Pseq([0.5,0.5],1),Pseq([0.75, 0.25],1)],1)],inf), // BPM parameter
+	\dur, 1, // BPM parameter
     \stretch, 1.875,
 	\buf, Pseq([d[\l],Prand([d[\m],d[\h],\rest],1), Prand([d[\m],d[\h],\rest],1), Prand([d[\l],d[\m],d[\h]],1),Prand([d[\m],d[\h],\rest],1), Prand([d[\m],d[\h],\rest],1)], inf),
     \rate, 1,
