@@ -18,7 +18,7 @@ class Client:
         self.client.send_message("/tempoChange", [bpm, duration])
 
     def stopAll(self):
-        self.client.send_message("/stopAll", [])
+        self.client.send_message("/pdef_control", ["stop"])
 
     def startAll(self):
-        self.client.send_message("/")
+        self.client.send_message("/pdef_control", ["start"])

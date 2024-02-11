@@ -1,26 +1,26 @@
-s.boot;
 Server.killAll;
+
+(
+s.boot;
 s.plotTree;
 s.meter;
 
-ServerOptions.devices;//first to check name
-
-s.options.device = "hdmi_ausgang_hier_einsetzen";
+t = TempoClock.new(100/60).permanent_(true); //tempoClock for changing overall Tempo
 
 
 (
 d = Dictionary.new;
-d.add(\l -> PathName ("C:/Users/fabia/Desktop/Dev/acia-motion-music/Samples/low").entries.collect({ //Path change!
+d.add(\l -> PathName ("C:/Users/kleen/Dev/acia-motion-music/Samples/low").entries.collect({ //Path change!
     arg sf;
     Buffer.read(s, sf.fullPath);
 });
 );
-d.add(\m -> PathName ("C:/Users/fabia/Desktop/Dev/acia-motion-music/Samples/mid").entries.collect({ //Path change!
+d.add(\m -> PathName ("C:/Users/kleen/Dev/acia-motion-music/Samples/mid").entries.collect({ //Path change!
     arg sf;
     Buffer.read(s, sf.fullPath);
 });
 );
-d.add(\h -> PathName ("C:/Users/fabia/Desktop/Dev/acia-motion-music/Samples/high").entries.collect({ //Path change!
+d.add(\h -> PathName ("C:/Users/kleen/Dev/acia-motion-music/Samples/high").entries.collect({ //Path change!
     arg sf;
     Buffer.read(s, sf.fullPath);
 });
@@ -32,19 +32,15 @@ d.keys.do{arg key;
 	};
 };
 )
-
-/*
-(
-// OSCdef for changing BPM
-OSCFunc(\changeBPM, { |msg, time, addr, recvPort|
-    var newBPM;
-	~bpmBus.set(newBPM);
-	newBPM = msg[3];
-
-    // Call the function to update Pdefs with the new BPM
-    ~tempoChange.value(t, newBPM, 8);
-}, '/changeBPM');
 )
+/*
+################################TESTING AREA#################################
+*/
+
+/pdef_control start
+/pdef_control stop
+/*
+################################COMMUNICATION#################################
 */
 
 (
@@ -62,21 +58,28 @@ OSCFunc(\changeBPM, { |msg, time, addr, recvPort|
 
 }, '/tempoChange', recvPort: 57120);
 
+~pdfs=[\rhytm_bpm,\bass,\rhythm_bpm];
+
+~startStopMusic = OSCFunc({ |msg, time, addr, recvPort|
+    var command = msg[1].asSymbol;
+
+    switch(command)
+	{\start}  { ~pdfs.do({ |pdefName| Pdef(pdefName).play; }); "Pdefs started.\n".postln; }
+	{\stop}  { ~pdfs.do({ |pdefName| Pdef(pdefName).stop; }); "Pdefs stopped.\n".postln; }
+        { "Unknown command.\n".postln; }; //default
+
+}, '/pdef_control',recvPort: 57120);
+
 )
 
 
-
-
-//~freqBus = Bus.control(s, 1);  // Create a control bus for frequency
-//~freqBus.set(440);  // Set an initial frequency value
 /*
-~bpmBus = Bus.control(s, 1); // Create a control bus for BPM
-~bpmBus.set(60); // Set an initial BPM value
+################################HELPER FUNCTION#################################
 */
+ServerOptions.devices;//first to check name
+s.options.device = "hdmi_ausgang_hier_einsetzen";
 
-t = TempoClock.new(100/60).permanent_(true); //tempoClock for changing overall Tempo
 
-//t.beats;
 
 (
 ~tempoChange = { //gradual Tempo change
@@ -91,20 +94,8 @@ t = TempoClock.new(100/60).permanent_(true); //tempoClock for changing overall T
 };
 )
 
-/*(
-~post = { t.tempo.postln; 1; };
-t.schedAbs(t.nextBar, {~post.()});
-)*/
-
-~tempoChange.value(t, 180, 8); //test
 /*
-(
-// Modify the Pdef for the sine pattern
-Pdef(\sinepat_bpm).quant_(1.875).add;
-
-// Modify the Pdef for the rhythm pattern
-Pdef(\rhythm_bpm).quant_(1.875).add;
-)
+################################MUSIC#################################
 */
 
 (
@@ -157,6 +148,7 @@ SynthDef(\pulseTest, {
 }).add;
 )
 
+
 (
 Pdef(\rhythm_bpm, Pbind(
     \instrument, \bufplay,
@@ -180,22 +172,6 @@ Pdef(\bass, Pbind(
 
 )
 
-
-
-
-(
-
-/*Pdef(\my_pulse_pattern, Pbind(
-    \instrument, \pulseTest,
-	\dur, 12,
-    \ampHz, 4,
-    \fund, 20,
-    \maxPartial, 8,
-    \width, 0.5,
-)).play(t, quant: Quant(4));
-*/
-// Patterns
-
 // Define a Pdef "sinepat_bpm"
 Pdef(\sinepat_bpm, Pbind(
     \instrument, \sine,
@@ -207,18 +183,6 @@ Pdef(\sinepat_bpm, Pbind(
     \pan, Pwhite(-0.8, 0.8, inf),
 )).play(t, quant: Quant(0.5));
 
-// Define a Pdef "bass"
-/*Pdef(\bass, Pbind(
-    \instrument, \sawtooth,
-	\dur, Pseq([Prand([2,1],1),2,2,2],inf),
-	\freq, Pseq([Prand([110,65.40],1), Prand([43.65,73.41],1), Prand([41.20, 48.99, 61,73],2),Prand([55, 65.40],1), Prand([73.41,87.30],1),Prand([41.20, 48.99],2)], inf),
-    \atk, Pwhite(0.001, 0.002, inf),
-    \rel, Pwhite(0.1,0.4, inf),
-	\amp, Pseq([Pexprand(0.6,0.98,inf),Pexprand(0.001,0.2,inf),Pexprand(0.6,0.98,inf),Pexprand(0,0.2,inf)],inf),
-    \pan, Pwhite(-0.8, 0.8, inf),
-
-)).play(t, quant: Quant(1));
-*/
 Pdef(\bass, Pbind(
     \instrument, \sawtooth,
 	\dur, 1,
