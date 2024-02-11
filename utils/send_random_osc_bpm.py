@@ -4,7 +4,7 @@ import numpy as np
 
 while(True):
     osc_client = Client()
-    time.sleep(3.0)
+    time.sleep(2.0)
     noise = np.random.normal(0,0.2,1)
     bps = 100.0/60.0 + noise[0]
     duration = 8.0

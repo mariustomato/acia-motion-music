@@ -96,6 +96,7 @@ s.options.device = "hdmi_ausgang_hier_einsetzen";
 
 /*
 ################################MUSIC#################################
+################################Synth#################################
 */
 
 (
@@ -130,23 +131,101 @@ SynthDef(\bufplay, {
     Out.ar(0, sig);
 }).add;
 
-SynthDef(\pulseTest, {
-	arg ampHz=4, fund=40, maxPartial=4, width=0.5;
-	var amp1, amp2, freq1, freq2, sig1, sig2;
-	amp1 = LFPulse.kr(ampHz, 0, 0.1) * 0.75;
-	amp2 = LFPulse.kr(ampHz, 0.5, 0.1) * 0.75;
-	freq1 = LFNoise0.kr(4).exprange(fund, fund*maxPartial).round(fund);
-	freq2 = LFNoise0.kr(4).exprange(fund, fund*maxPartial).round(fund);
-	freq1 = freq1 * LFPulse.kr(8, add:1);
-	freq2 = freq2 * LFPulse.kr(6, add:1);
-	sig1 = Pulse.ar(freq1, width, amp1);
-	sig2 = Pulse.ar(freq2, width, amp2);
-	sig1 = FreeVerb.ar(sig1, 0.7, 0.8, 0.25);
-	sig2 = FreeVerb.ar(sig2, 0.7, 0.8, 0.25);
-	Out.ar(0, sig1);
-	Out.ar(1, sig2);
+SynthDef(\horror, {
+    arg out = 0, freq = 220, gate = 1, amp = 0.5;
+
+    var env, sound;
+
+    // Envelope
+    env = EnvGen.kr(Env.perc(0.01, 1), gate, doneAction: 2);
+
+    // Noise generator
+    sound = PinkNoise.ar(amp);
+
+    // Filter
+    sound = RLPF.ar(sound, freq * LFNoise0.kr(0.5).range(0.5, 2), 0.2);
+
+    // Apply envelope
+    sound = sound * env * amp;
+
+    Out.ar(out, sound);
+}).add;
+
+SynthDef(\bpfsaw, {
+	arg atk=2, sus=0, rel=3, c1=1, c2=(-1),
+	freq=500, detune=0.2, pan=0, cfhzmin=0.1, cfhzmax=0.3, cfmin=500, cfmax=2000, rqmin=0.1, rqmax=0.2,
+	lsf=200, ldb=0, amp=1, out=0;
+	var sig, env, panLFO;
+	env = EnvGen.kr(Env([0,1,1,0],[atk,sus,rel],[c1,0,c2]),doneAction:2);
+	// Define a pattern for panning alternating between -0.8 and 0.8
+	panLFO = LFPulse.kr(0.1).range(-1, 1);
+	sig = Saw.ar(freq * {LFNoise1.kr(0.5, detune).midiratio} ! 2);
+	sig = BPF.ar(
+		sig,
+		{LFNoise1.kr(
+			LFNoise1.kr(4).exprange(cfhzmin, cfhzmax)
+		).exprange(cfmin, cfmax)} ! 2,
+		{LFNoise1.kr(0.1).exprange(rqmin, rqmax)} ! 2
+	);
+	sig = BLowShelf.ar(sig, lsf, 0.5, ldb);
+	// Use the panEnv pattern for panning
+	sig = Balance2.ar(sig[0], sig[1], pan * panLFO);
+	sig = sig * env * amp;
+	Out.ar(out, sig);
 }).add;
 )
+/*
+################################Horror#################################
+*/
+(
+Pdef(\heartbeat, Pbind(
+	\instrument, \horror,
+	\dur, Pseq([0.5,1],inf),
+	\doneAction, 2,
+	\freq, 220,
+	\amp, Pseq([0.11,0.1,],inf),
+)).play(t, quant:Quant(1));
+
+Pdef(\horror1, Pbind(
+	\instrument, \bpfsaw,
+	\dur, 12,
+	\midinote, Pxrand([
+		[100,88,80,87],
+		[90,92,94,100,102,101],
+		[80,100,87,86,102],
+		[99,100,101,102],
+	],inf),
+	\detune, Pexprand(0.05,0.2,inf),
+	\cfmin, 100,
+	\cfmax, 1500,
+	\rqmin, Pexprand(0.01,0.15, inf),
+	\atk, Pwhite(2.0,2.5,inf),
+	\rel, Pwhite(4,5,inf),
+	\ldb, 6,
+	\amp, 0.01,
+	\out, 0,
+)).play(t, quant:Quant(1));
+
+Pdef(\horror2, Pbind(
+	\instrument, \bpfsaw,
+	\dur, 25,
+	\freq, 8,
+	\amp, 0.1,
+	\atk, 0,
+	// Set pan to a pattern alternating between -1 and 1
+	\pan, Pexprand(-1, 1, inf),
+	\out, 0,
+)).play(t, quant: Quant(3));
+)
+
+/*
+################################Joggen#################################
+*/
+
+
+
+
+
 
 
 (
@@ -172,6 +251,11 @@ Pdef(\bass, Pbind(
 
 )
 
+/*
+################################Club#################################
+*/
+
+(
 // Define a Pdef "sinepat_bpm"
 Pdef(\sinepat_bpm, Pbind(
     \instrument, \sine,
@@ -184,12 +268,12 @@ Pdef(\sinepat_bpm, Pbind(
 )).play(t, quant: Quant(0.5));
 
 Pdef(\bass, Pbind(
-    \instrument, \sawtooth,
+    \instrument, \bpfsaw,
 	\dur, 1,
 	\freq, Prand([Pseq([Prand([110,65.40,\rest],1), Prand([43.65,73.41,\rest],1), Prand([41.20, 48.99, 61,73],2),Prand([55, 65.40],1), Prand([73.41,87.30],1),Prand([41.20, 48.99],2)], 1),Pseq([110,110,110,110,146.83,146.83,146.83,146.83,146.83],3)],inf),
     \atk, Pwhite(0.01, 0.2, inf),
     \rel, Pwhite(0.1,0.5, inf),
-	\amp, Pseq([Pexprand(0.1,0.23,inf),Pexprand(0.001,0.2,inf),Pexprand(0.06,0.098,inf),Pexprand(0,0.2,inf)],inf),
+	\amp, Pseq([Pexprand(0.1,0.2,inf),Pexprand(0.001,0.2,inf),Pexprand(0.06,0.098,inf),Pexprand(0,0.2,inf)],inf),
     \pan, Pwhite(-0.8, 0.8, inf),
 
 )).play(t, quant: Quant(1));

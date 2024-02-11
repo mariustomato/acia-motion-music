@@ -1,0 +1,16 @@
+import argparse
+from pythonosc import udp_client
+
+# Function to send OSC message to SuperCollider
+def send_osc_message(address, port, message):
+    client = udp_client.SimpleUDPClient(address, port)
+    client.send_message("/startPdef", message)
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Send OSC messages to SuperCollider to start a PDEF.")
+    parser.add_argument("--address", default="127.0.0.1", help="The IP address of SuperCollider.")
+    parser.add_argument("--port", type=int, default=57120, help="The port number of SuperCollider's OSC server.")
+    parser.add_argument("--pdef_name", default="pdef1", help="The name of the PDEF to start.")
+    args = parser.parse_args()
+
+    send_osc_message(args.address, args.port, args.pdef_name)
