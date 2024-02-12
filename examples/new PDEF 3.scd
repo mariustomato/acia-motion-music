@@ -51,10 +51,10 @@ d.keys.do{arg key;
 	//var time = msg[1].asInteger;
 	var bpm = msg[1].asFloat;
 	var numBeats = msg[2].asInteger;
-	//msg.postln;
+	var buf=(bpm*60).asInteger;
 
-	// Call the tempoChange function
 	~tempoChange.value(t, bpm, numBeats);
+	~playPdefsForBpm.value(buf);
 
 }, '/tempoChange', recvPort: 57120);
 
@@ -69,6 +69,28 @@ d.keys.do{arg key;
         { "Unknown command.\n".postln; }; //default
 
 }, '/pdef_control',recvPort: 57120);
+
+~bpmRanges = [
+    (range: (30..90), pdefs: [\jogging_rhythm_bpm, \jogging_bass]),
+    (range: (91..150), pdefs: [\club_sinepat_bpm, \club_bass, \club_rhythm_bpm]),
+    (range: (151..290), pdefs: [\horror_heartbeat, \horror2])
+];
+
+~playPdefsForBpm = {
+	arg bpm;
+    var rangeItem;
+
+	rangeItem = ~bpmRanges.detect({ |item| item.range.includes(bpm) });
+
+    Pdef.all.do { |pdef| pdef.stop };
+	if (rangeItem.notNil,{
+        rangeItem.pdefs.do({ |pdefName|
+            Pdef(pdefName).play(tempoClock: t);
+        });
+    },{
+        "No matching BPM range found for current BPM: %\n".postln;
+    });
+};
 
 )
 
@@ -89,13 +111,14 @@ s.options.device = "hdmi_ausgang_hier_einsetzen";
 	clock.schedAbs(clock.nextBar, {
 		clock.tempo_(tempoArray[i]);
 		i = i + 1;
-		if(i < numBeats) {1} {\done.postln};
+		if(i < numBeats) {1} {"done".postln};
 	});
 };
 )
 
 /*
 ################################MUSIC#################################
+(
 ################################Synth#################################
 */
 
@@ -178,13 +201,16 @@ SynthDef(\bpfsaw, {
 ################################Horror#################################
 */
 (
-Pdef(\heartbeat, Pbind(
+(
+(
+(
+Pdef(\horror_heartbeat, Pbind(
 	\instrument, \horror,
 	\dur, Pseq([0.5,1],inf),
 	\doneAction, 2,
 	\freq, 220,
 	\amp, Pseq([0.11,0.1,],inf),
-)).play(t, quant:Quant(1));
+)));
 
 Pdef(\horror1, Pbind(
 	\instrument, \bpfsaw,
@@ -204,7 +230,7 @@ Pdef(\horror1, Pbind(
 	\ldb, 6,
 	\amp, 0.01,
 	\out, 0,
-)).play(t, quant:Quant(1));
+)));
 
 Pdef(\horror2, Pbind(
 	\instrument, \bpfsaw,
@@ -215,8 +241,7 @@ Pdef(\horror2, Pbind(
 	// Set pan to a pattern alternating between -1 and 1
 	\pan, Pexprand(-1, 1, inf),
 	\out, 0,
-)).play(t, quant: Quant(3));
-)
+)));
 
 /*
 ################################Joggen#################################
@@ -224,21 +249,17 @@ Pdef(\horror2, Pbind(
 
 
 
-
-
-
-
 (
-Pdef(\rhythm_bpm, Pbind(
+Pdef(\jogging_rhythm_bpm, Pbind(
     \instrument, \bufplay,
 	\dur, Pseq([1,0.5,0.5,1,Prand([Pseq([0.5,0.5],1),Pseq([0.75, 0.25],1)],1)],inf), // BPM parameter
     \stretch, 1.875,
 	\buf, Pseq([d[\l],Prand([d[\m],d[\h],\rest],1), Prand([d[\m],d[\h],\rest],1), Prand([d[\l],d[\m],d[\h]],1),Prand([d[\m],d[\h],\rest],1), Prand([d[\m],d[\h],\rest],1)], inf),
     \rate, 1,
 	\amp, Pseq([Pexprand(0.1, 0.5,1), Pexprand(0.005, 0.2, 2)], inf),
-)).play(t, quant: Quant(1));
+)));
 
-Pdef(\bass, Pbind(
+Pdef(\jogging_bass, Pbind(
     \instrument, \sawtooth,
 	\dur, Pseq([1,1,1,1],inf),
 	\freq, Pseq([110,110,110,110,146.83,146.83,146.83,146.83,146.83],inf),
@@ -247,9 +268,9 @@ Pdef(\bass, Pbind(
 	\amp, Pseq([Pexprand(0.6,0.98,inf),Pexprand(0.001,0.2,inf),Pexprand(0.6,0.98,inf),Pexprand(0,0.2,inf)],inf),
     \pan, Pwhite(-0.8, 0.8, inf),
 
-)).play(t, quant: Quant(1));
+));
 
-)
+
 
 /*
 ################################Club#################################
@@ -257,7 +278,7 @@ Pdef(\bass, Pbind(
 
 (
 // Define a Pdef "sinepat_bpm"
-Pdef(\sinepat_bpm, Pbind(
+Pdef(\club_sinepat_bpm, Pbind(
     \instrument, \sine,
 	\dur, 0.5,  // BPM parameter
 	\freq, Prand([Pseq([293.66,329.62,293.66,261.62,Pseq([\rest,261.62],4)]),Pseq([587.33,659.25,587.33,523.25],1), Pseq([783.99,698.45,659.25],1),Pseq([\rest,440],3),Pseq([Pseq([783.99, 830.60],3),Prand([Pseq([1046.50,987.76,1046.50,1174.66,1174.66,880],1),Pseq([698.45,659.25,622.25,587.33,554.36,523.25],1)]),1],1)],inf),
@@ -265,9 +286,9 @@ Pdef(\sinepat_bpm, Pbind(
     \rel, Pwhite(0.1, 0.3, inf),
 	\amp, Prand([0, 0.4], inf),
     \pan, Pwhite(-0.8, 0.8, inf),
-)).play(t, quant: Quant(0.5));
+));
 
-Pdef(\bass, Pbind(
+Pdef(\club_bass, Pbind(
     \instrument, \bpfsaw,
 	\dur, 1,
 	\freq, Prand([Pseq([Prand([110,65.40,\rest],1), Prand([43.65,73.41,\rest],1), Prand([41.20, 48.99, 61,73],2),Prand([55, 65.40],1), Prand([73.41,87.30],1),Prand([41.20, 48.99],2)], 1),Pseq([110,110,110,110,146.83,146.83,146.83,146.83,146.83],3)],inf),
@@ -276,17 +297,17 @@ Pdef(\bass, Pbind(
 	\amp, Pseq([Pexprand(0.1,0.2,inf),Pexprand(0.001,0.2,inf),Pexprand(0.06,0.098,inf),Pexprand(0,0.2,inf)],inf),
     \pan, Pwhite(-0.8, 0.8, inf),
 
-)).play(t, quant: Quant(1));
+)));
 
 
 //Rest
 // Define a Pdef "rhythm_bpm"
-Pdef(\rhythm_bpm, Pbind(
+Pdef(\club_rhythm_bpm, Pbind(
     \instrument, \bufplay,
 	\dur, 1, // BPM parameter
     \stretch, 1.875,
 	\buf, Pseq([d[\l],Prand([d[\m],d[\h],\rest],1), Prand([d[\m],d[\h],\rest],1), Prand([d[\l],d[\m],d[\h]],1),Prand([d[\m],d[\h],\rest],1), Prand([d[\m],d[\h],\rest],1)], inf),
     \rate, 1,
 	\amp, Pseq([Pexprand(0.1, 0.5,1), Pexprand(0.005, 0.2, 2)], inf),
-)).play(t, quant: Quant(1));
-)
+)));
+

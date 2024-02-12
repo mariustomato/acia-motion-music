@@ -4,7 +4,7 @@ from pythonosc import udp_client
 
 
 class Client:
-    last_update = time.time()
+    last_update = time.time() - 4
 
     def __init__(self):
         self.ip = "127.0.0.1"
