@@ -37,8 +37,10 @@ d.keys.do{arg key;
 ################################TESTING AREA#################################
 */
 
-/pdef_control start
-/pdef_control stop
+~pdef_control.value("start")
+~pdef_control.value("stop")
+~tempoChangeOSC.value(3.0,4.0,"","")
+
 /*
 ################################COMMUNICATION#################################
 */
@@ -64,8 +66,8 @@ d.keys.do{arg key;
     var command = msg[1].asSymbol;
 
     switch(command)
-	{\start}  { ~pdfs.do({ |pdefName| Pdef(pdefName).play; }); "Pdefs started.\n".postln; }
-	{\stop}  { ~pdfs.do({ |pdefName| Pdef(pdefName).stop; }); "Pdefs stopped.\n".postln; }
+	{\start}  { ~playPdefsForBpm.value(t.tempo*60);  "Pdefs started.\n".postln; }
+	{\stop}  { Pdef.all.do { |pdef| pdef.stop }; "Pdefs stopped.\n".postln; }
         { "Unknown command.\n".postln; }; //default
 
 }, '/pdef_control',recvPort: 57120);
