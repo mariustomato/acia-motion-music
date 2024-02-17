@@ -10,17 +10,17 @@ t = TempoClock.new(100/60).permanent_(true); //tempoClock for changing overall T
 
 (
 d = Dictionary.new;
-d.add(\l -> PathName ("C:\Users\kleen\Dev\acia-motion-music\Samples\low").entries.collect({ //Path change!
+d.add(\l -> PathName ("C:/Users/kleen/Dev/acia-motion-music/Samples/low").entries.collect({ //Path change!
     arg sf;
     Buffer.read(s, sf.fullPath);
 });
 );
-d.add(\m -> PathName ("C:\Users\kleen\Dev\acia-motion-music\Samples\mid").entries.collect({ //Path change!
+d.add(\m -> PathName ("C:/Users/kleen/Dev/acia-motion-music/Samples/mid").entries.collect({ //Path change!
     arg sf;
     Buffer.read(s, sf.fullPath);
 });
 );
-d.add(\h -> PathName ("C:\Users\kleen\Dev\acia-motion-music\Samples\high").entries.collect({ //Path change!
+d.add(\h -> PathName ("C:/Users/kleen/Dev/acia-motion-music/Samples/high").entries.collect({ //Path change!
     arg sf;
     Buffer.read(s, sf.fullPath);
 });
@@ -86,6 +86,9 @@ d.keys.do{arg key;
 ~playPdefsForBpm = {
 	arg bpm;
     var rangeItem;
+
+	"calling bpm with".postln;
+	bpm.postln;
 
 	rangeItem = ~bpmRanges.detect({ |item| item.range.includes(bpm) });
 

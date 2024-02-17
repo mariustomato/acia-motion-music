@@ -52,6 +52,6 @@ if __name__ == '__main__':
             if val > 0:  # print new value if peak was detected
                 print(f"{PROGRAM_START - time.time()}s- Detected BPM: {bpm} and val {val}")
 
-        osc_client.tempoChange(bpm / 60, 4)
+            osc_client.tempoChange(tmp / 60, 4)
 
     osc_client.stopAll()
