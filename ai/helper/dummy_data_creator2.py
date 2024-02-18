@@ -4,22 +4,24 @@ import os
 import scipy.signal as signal
 
 
-def create_training_data(dataAmount):
+def create_training_data(data_amount: int, base_path: str) -> []:
     data = []
     counter = 0
-    while counter < dataAmount:
+    while counter < data_amount:
         test_data = create_test_data(160)
         if test_data is not None:
             data.append(test_data)
             counter += 1
 
-    data_dir = './data'
+    data_dir = base_path + '/data'
 
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
 
     with open(data_dir + '/plain_data.json', 'w') as file:
         json.dump(data, file)
+
+    return data
 
 
 def create_test_data(dataPointsPerSecond):
@@ -29,7 +31,7 @@ def create_test_data(dataPointsPerSecond):
     prevBPMArray = create_data_array(sizePrevBPM / 100 * dataEntryLength, dataPointsPerSecond)
     nextBPMArray = create_data_array(sizeNextBPM / 100 * dataEntryLength, dataPointsPerSecond)
     prevBPM = get_bpm(prevBPMArray, dataPointsPerSecond)
-    nextBPM = get_bpm(nextBPMArray, dataPointsPerSecond)
+    nextBPM = round(get_bpm(nextBPMArray, dataPointsPerSecond))
     if nextBPM == prevBPM == 0:
         return None
     data = prevBPMArray + nextBPMArray
