@@ -7,7 +7,7 @@ def create_training_data(data_amount: int, base_path: str) -> []:
     data = []
     curr_base_bpm = 7
     total_bpms = 200 - curr_base_bpm  # max possible bpm (200) - min possible bpm (7)
-    sequence_size = 1600  # 10 seconds * 160 entries per second
+    sequence_size = 800  # 5 seconds * 160 entries per second
     if data_amount < total_bpms:
         print(f"Raised data amount to {total_bpms} as this is the minimum amount of data needed to cover all possible BPMs")
         data_amount = total_bpms
@@ -17,7 +17,7 @@ def create_training_data(data_amount: int, base_path: str) -> []:
         for i in range(loops):
             data_entry = random_bpm_sequence(curr_base_bpm, sequence_size)
             calculated_bpm = get_bpm(data_entry)
-            cutted_entry = data_entry[:1600]
+            cutted_entry = data_entry[:sequence_size]
             random_slice = random.randint(0, len(cutted_entry) - 1)
             new_start = cutted_entry[random_slice:]
             new_end = cutted_entry[:random_slice]
@@ -26,9 +26,15 @@ def create_training_data(data_amount: int, base_path: str) -> []:
                 break
         counter += loops
         curr_base_bpm += 1
+    add_zero_bpm(data, sequence_size)
     random.shuffle(data)
     save_data(data, base_path)
     return data
+
+
+def add_zero_bpm(data: [], sequence_size: int):
+    data_entry = [0] * sequence_size
+    data.append({'data': data_entry, 'nextBPM': 0})
 
 
 def save_data(data: [], base_path: str) -> None:

@@ -7,9 +7,9 @@ import matplotlib.pyplot as plt
 
 def gen_test_input():
     data = []
-    rand_bpm = random.randint(10, 200)
-    peak = int(9600 / rand_bpm)
-    for i in range(9600):
+    rand_bpm = random.randint(0, 10) * 20
+    peak = int(480 / rand_bpm)
+    for i in range(480):
         data.append(1) if i % peak == 0 else data.append(0)
     peaks = sum(1 for point in data if point == 1)
     return [data], peaks

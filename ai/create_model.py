@@ -7,7 +7,7 @@ import ai.helper.test_model as model_tester
 
 
 if __name__ == '__main__':
-    units = 100
+    units = 80
     epochs = 100
     layers = 1
     activation = 'tanh'
