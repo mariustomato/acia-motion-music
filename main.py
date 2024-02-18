@@ -11,7 +11,7 @@ THRESHOLD = 5  # the amount for a trigger (away from curr average)
 LAG = 10
 INFLUENCE = 0.1  # value between [0,1]->no to full influence
 PEAK_VAL = 1  # TODO: adjust peak value on hardware implementation
-MODEL_PATH = './model.keras'
+MODEL_PATH = './model.h5'
 SAMPLING_RATE = 160
 
 
@@ -55,11 +55,11 @@ if __name__ == '__main__':
             if len(predicted_bpms) >= 320:  # Window for the bpm smoothing is set to 2 second (160 data points * 2 seconds)
                 predicted_bpms = predicted_bpms[1:]
             predicted_bpms.append(bpm)
-            smoothed_bpm = calc_avg_bpm(predicted_bpms)
+            smoothed_bpm = round(calc_avg_bpm(predicted_bpms))
 
-            # print(f"Detected BPM: {round(smoothed_bpm)}")
+            print(f"Detected BPM: {smoothed_bpm}")
 
             clock = datetime.now()
-            osc_client.tempo_change(clock, round(smoothed_bpm / 60), 8)
+            osc_client.tempo_change(clock, smoothed_bpm / 60, 8)
 
             time.sleep(1 / SAMPLING_RATE)

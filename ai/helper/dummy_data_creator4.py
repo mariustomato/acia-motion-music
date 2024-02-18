@@ -7,7 +7,7 @@ def create_training_data(data_amount: int, base_path: str) -> []:
     data = []
     curr_base_bpm = 7
     total_bpms = 200 - curr_base_bpm  # max possible bpm (200) - min possible bpm (7)
-    sequence_size = 800  # 5 seconds * 160 entries per second
+    sequence_size = 480  # 5 seconds * 160 entries per second
     if data_amount < total_bpms:
         print(f"Raised data amount to {total_bpms} as this is the minimum amount of data needed to cover all possible BPMs")
         data_amount = total_bpms
