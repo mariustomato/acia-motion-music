@@ -5,7 +5,7 @@ import numpy as np
 from keras.models import load_model
 
 from listeners.com_listener import ComListener
-# from listeners.simulated_listener import SimulatedListener
+from listeners.simulated_listener import SimulatedListener
 from utils.client import Client
 from utils.plain_bpm_detector import advanced_detect_bpm_capped
 
@@ -16,9 +16,9 @@ PEAK_VAL = 1  # TODO: adjust peak value on hardware implementation
 MODEL_PATH = './model.h5'
 SAMPLING_RATE = 160
 PEAK_VAL = 1
-SAMPLING_SIZE = 1000
+SAMPLING_SIZE = 480
 MAX_BPM = 200
-USE_STATIC_BPM = True
+USE_STATIC_BPM = False
 
 
 def calc_avg_bpm(arr: []):
@@ -31,22 +31,20 @@ def calc_avg_bpm(arr: []):
 
 if __name__ == '__main__':
     listeners = [
-        ComListener(com_port='COM6', sampling_size=SAMPLING_SIZE, max_bpm=MAX_BPM, sampling_rate=SAMPLING_RATE),
+        # ComListener(com_port='COM6', sampling_size=SAMPLING_SIZE, max_bpm=MAX_BPM, sampling_rate=SAMPLING_RATE),
+        SimulatedListener(sampling_size=SAMPLING_SIZE, sampling_rate=SAMPLING_RATE, max_bpm=MAX_BPM)
     ]
 
     PROGRAM_START = time.time()
 
     osc_client = Client()
-    if not USE_STATIC_BPM:
-        model = load_model(MODEL_PATH)
+    model = load_model(MODEL_PATH)
         
     predicted_bpms = [0]  # Smoothing of the predicted bpm
 
     CURR_TIME = datetime.now()
     window_size = 4
     sampling_time_diff = 1 / SAMPLING_RATE
-    osc_client = Client()
-    # model = keras.models.load_model("./model.h5")
     bpm = 0
 
     while True:
