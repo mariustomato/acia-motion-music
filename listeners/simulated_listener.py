@@ -13,7 +13,7 @@ class SimulatedListener(Listener):
             int: Der generierte Wert
         """
         # Konfiguration der Peaks
-        peak_interval = 100  # Zeitintervall in ms
+        peak_interval = 500  # Zeitintervall in ms
         peak_width = 10  # Breite der Peaks in ms
         peak_height = 100  # Höhe der Peaks
 
