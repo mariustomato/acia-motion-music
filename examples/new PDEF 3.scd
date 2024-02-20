@@ -25,6 +25,11 @@ d.add(\h -> PathName ("C:/Users/kleen/Dev/acia-motion-music/Samples/high").entri
     Buffer.read(s, sf.fullPath);
 });
 );
+d.add(\h -> PathName ("C:/Users/kleen/Dev/acia-motion-music/Samples/hihat").entries.collect({ //Path change!
+    arg sf;
+    Buffer.read(s, sf.fullPath);
+});
+);
 
 d.keys.do{arg key;
 	d[key].do{ arg file;
@@ -37,15 +42,6 @@ d.keys.do{arg key;
 ################################TESTING AREA#################################
 */
 
-~pdef_control.value("start")
-~pdef_control.value("stop")
-~tempoChangeOSC.value(3.0,4.0,"","")
-(d.keys.do{arg key;
-	d[key].do{ arg file;
-		file.postln;
-	};
-};
-)
 /*
 ################################COMMUNICATION#################################
 */
@@ -59,6 +55,8 @@ d.keys.do{arg key;
 	var bpm = msg[1].asFloat;
 	var numBeats = msg[2].asInteger;
 	var buf=(bpm*60).asInteger;
+
+	"changing tmempo".postln;
 
 	~tempoChange.value(t, bpm, numBeats);
 	~playPdefsForBpm.value(buf);
@@ -78,9 +76,10 @@ d.keys.do{arg key;
 }, '/pdef_control',recvPort: 57120);
 
 ~bpmRanges = [
-    (range: (30..90), pdefs: [\jogging_rhythm_bpm, \jogging_bass]),
-    (range: (91..150), pdefs: [\club_sinepat_bpm, \club_bass, \club_rhythm_bpm]),
-    (range: (151..290), pdefs: [\horror_heartbeat, \horror2])
+    (range: (0..60), pdefs: [\heartbeat,\horror1,\horror2]),
+    (range: (61..80), pdefs: [\joggen1,\joggen2,\bass]),
+	(range: (91..110), pdefs: [\bass_club,\club1,\club2,\club3,\rhythm,\rhythm2]),
+    (range: (111..290), pdefs: [\experimental,\ex2,\ex3])
 ];
 
 ~playPdefsForBpm = {
@@ -210,17 +209,17 @@ SynthDef(\bpfsaw, {
 /*
 ################################Horror#################################
 */
+
 (
 (
-(
-(
-Pdef(\horror_heartbeat, Pbind(
+Pdef(\heartbeat, Pbind(
 	\instrument, \horror,
 	\dur, Pseq([0.5,1],inf),
 	\doneAction, 2,
 	\freq, 220,
+	\quant,1,
 	\amp, Pseq([0.11,0.1,],inf),
-)));
+));
 
 Pdef(\horror1, Pbind(
 	\instrument, \bpfsaw,
@@ -238,9 +237,10 @@ Pdef(\horror1, Pbind(
 	\atk, Pwhite(2.0,2.5,inf),
 	\rel, Pwhite(4,5,inf),
 	\ldb, 6,
-	\amp, 0.01,
+	\amp, 0.4,
 	\out, 0,
-)));
+	\quant,1,
+));
 
 Pdef(\horror2, Pbind(
 	\instrument, \bpfsaw,
@@ -251,7 +251,9 @@ Pdef(\horror2, Pbind(
 	// Set pan to a pattern alternating between -1 and 1
 	\pan, Pexprand(-1, 1, inf),
 	\out, 0,
-)));
+	\quant,3,
+));
+);
 
 /*
 ################################Joggen#################################
@@ -260,64 +262,191 @@ Pdef(\horror2, Pbind(
 
 
 (
-Pdef(\jogging_rhythm_bpm, Pbind(
-    \instrument, \bufplay,
-	\dur, Pseq([1,0.5,0.5,1,Prand([Pseq([0.5,0.5],1),Pseq([0.75, 0.25],1)],1)],inf), // BPM parameter
-    \stretch, 1.875,
-	\buf, Pseq([d[\l],Prand([d[\m],d[\h],\rest],1), Prand([d[\m],d[\h],\rest],1), Prand([d[\l],d[\m],d[\h]],1),Prand([d[\m],d[\h],\rest],1), Prand([d[\m],d[\h],\rest],1)], inf),
-    \rate, 1,
-	\amp, Pseq([Pexprand(0.1, 0.5,1), Pexprand(0.005, 0.2, 2)], inf),
-)));
+Pdef(\joggen1, Pbind(
+	\instrument, \bufplay,
+	\dur, 1,
+	\buf, Pseq([Prand([
+		[[d[\l],d[\m]],d[\m],d[\m],d[\m]],
+		[[d[\m],d[\h]],d[\m],d[\m],d[\m]],
+		[d[\m],d[\m],d[\m],d[\m],]
+	],1)],inf),
+	\amp, 0.5,
+	\pan, 0,
+	\quant,1,
+));
 
-Pdef(\jogging_bass, Pbind(
+Pdef(\joggen2,Pbind(
+	\instrument, \bpfsaw,
+	\dur, Pseq([1.5,2.5,4],inf),
+	\midinote, Pseq([
+		[69,73,76],
+		[71,75,78],
+		Pxrand([
+			[72,76,79],
+			[72,76,79],
+			[69,74,78]
+	],1)],inf),
+	\detune, Pwhite(0.1,0.19,inf),
+	\cfmin, 100,
+	\cfmax, 1500,
+	\rqmin, Pexprand(0.1,0.15, inf),
+	\atk, Pwhite(0.5,0.9,inf),
+	\rel, Pwhite(1,1.2,inf),
+	\ldb, Pwhite(0,0.5,inf),
+	\amp, 0.87,
+	\pan, Pwhite(-0.8,0.8,inf),
+	\out, 0,
+	\quant,1,
+));
+
+Pdef(\bass, Pbind(
     \instrument, \sawtooth,
-	\dur, Pseq([1,1,1,1],inf),
-	\freq, Pseq([110,110,110,110,146.83,146.83,146.83,146.83,146.83],inf),
+	\dur, 0.5,
+	\midinote, Pseq([Pseq([45],3),Pxrand([Pseq([57],5),Pseq([47],5)],1),Pxrand([Pseq([48],8),Pseq([50],8),Pseq([48,50],4),Pseq([45],8),Pseq([57,48],4)],1)],inf),
     \atk, Pwhite(0.001, 0.002, inf),
     \rel, Pwhite(0.1,0.4, inf),
-	\amp, Pseq([Pexprand(0.6,0.98,inf),Pexprand(0.001,0.2,inf),Pexprand(0.6,0.98,inf),Pexprand(0,0.2,inf)],inf),
+	\amp, Pseq([Pexprand(0.4,0.5,inf),Pexprand(0.001,0.2,inf),Pexprand(0.4,0.5,inf),Pexprand(0,0.2,inf)],inf),
     \pan, Pwhite(-0.8, 0.8, inf),
-
+	\quant,1,
 ));
+
+);
 
 
 
 /*
 ################################Club#################################
 */
-
 (
 // Define a Pdef "sinepat_bpm"
-Pdef(\club_sinepat_bpm, Pbind(
-    \instrument, \sine,
-	\dur, 0.5,  // BPM parameter
-	\freq, Prand([Pseq([293.66,329.62,293.66,261.62,Pseq([\rest,261.62],4)]),Pseq([587.33,659.25,587.33,523.25],1), Pseq([783.99,698.45,659.25],1),Pseq([\rest,440],3),Pseq([Pseq([783.99, 830.60],3),Prand([Pseq([1046.50,987.76,1046.50,1174.66,1174.66,880],1),Pseq([698.45,659.25,622.25,587.33,554.36,523.25],1)]),1],1)],inf),
-    \atk, Pwhite(0.1, 0.2, inf),
-    \rel, Pwhite(0.1, 0.3, inf),
-	\amp, Prand([0, 0.4], inf),
+Pdef(\bass_club, Pbind(
+    \instrument, \sawtooth,
+	\dur, Pseq([2,2,Pseq([1,2,0.5,0.5],inf)],inf),  // BPM parameter
+	\midinote, Pseq([Pseq([\rest],2),Pseq([Pseq([36],4),Pseq([41],4),Pseq([45],4),Pseq([43,43,31,31],1)],inf)],inf),
+    \atk, Pwhite(0.001, 0.002, inf),
+    \rel, Pwhite(0.1,0.4, inf),
+	\amp, Pseq([0.5,0.2,0.3,0.2],inf),
     \pan, Pwhite(-0.8, 0.8, inf),
+	\quant,1,
 ));
 
-Pdef(\club_bass, Pbind(
-    \instrument, \bpfsaw,
-	\dur, 1,
-	\freq, Prand([Pseq([Prand([110,65.40,\rest],1), Prand([43.65,73.41,\rest],1), Prand([41.20, 48.99, 61,73],2),Prand([55, 65.40],1), Prand([73.41,87.30],1),Prand([41.20, 48.99],2)], 1),Pseq([110,110,110,110,146.83,146.83,146.83,146.83,146.83],3)],inf),
-    \atk, Pwhite(0.01, 0.2, inf),
-    \rel, Pwhite(0.1,0.5, inf),
-	\amp, Pseq([Pexprand(0.1,0.2,inf),Pexprand(0.001,0.2,inf),Pexprand(0.06,0.098,inf),Pexprand(0,0.2,inf)],inf),
-    \pan, Pwhite(-0.8, 0.8, inf),
+Pdef(\club1,Pbind(
+	\instrument, \bpfsaw,
+	\dur, Pseq([Pseq([0.5],2),Pseq([0.25],4),Pseq([0.125],8),Pseq([0.0625],4)],inf),
+	\freq, 1,
+	\detune, 0,
+	\cfmin, 1500,
+	\cfmax, 1500,
+	\atk, Pwhite(0.01,0.03,inf),
+	\rel, Pwhite(0.1,0.2,inf),
+	\ldb, Pwhite(0,0.5,inf),
+	\amp, 0.9,
+	\pan, Pwhite(-0.8,0.8,inf),
+	\out, 0,
+	\quant,1,
+));
 
-)));
+Pdef(\club2,Pbind(
+	\instrument, \bpfsaw,
+	\dur, Pseq([Pseq([0.5],2),Pseq([0.25],4),Pseq([0.125],8),Pseq([0.0625],4)],inf),
+	\freq, Pseq([Pseq([1],18),Pseq([\rest],inf)],inf),
+	\detune, 0,
+	\cfmin, 1500,
+	\cfmax, 1500,
+	\atk, Pwhite(0.01,0.03,inf),
+	\rel, Pwhite(0.1,0.2,inf),
+	\ldb, Pwhite(0,0.5,inf),
+	\amp, 0.9,
+	\pan, Pwhite(-0.8,0.8,inf),
+	\out, 0,
+	\quant,1,
+));
 
+Pdef(\club3, Pbind(
+	\instrument, \bpfsaw,
+	\dur, Pseq([4,4,1,1,1,Pseq([1],inf)],inf),
+	\midinote, Pseq([\rest,\rest,Pseq([84,84,84,83,83,83,83,83,84,84,84,84,83,83,83,79],1),Pseq([84,84,84,83,\rest,79,Pseq([\rest],2),Pseq([84,84,84,\rest,83,83],1),Pseq([\rest],2)],inf)],inf),
+	\cfmin, 1500,
+	\cfmax, 1500,
+	\atk, Pwhite(0.01,0.03,inf),
+	\rel, Pwhite(0.1,0.4,inf),
+	\ldb, Pwhite(0,5,inf),
+	\amp, 0.9,
+	\pan, Pwhite(-0.8,0.8,inf),
+	\out, 0,
+	\quant,1,
+));
 
-//Rest
-// Define a Pdef "rhythm_bpm"
-Pdef(\club_rhythm_bpm, Pbind(
+/*
+Pdef(\rhythm, Pbind(
     \instrument, \bufplay,
-	\dur, 1, // BPM parameter
+    \dur, 0.25, // BPM parameter
     \stretch, 1.875,
-	\buf, Pseq([d[\l],Prand([d[\m],d[\h],\rest],1), Prand([d[\m],d[\h],\rest],1), Prand([d[\l],d[\m],d[\h]],1),Prand([d[\m],d[\h],\rest],1), Prand([d[\m],d[\h],\rest],1)], inf),
+    \buf, Pseq([Pseq([\rest],16), Pseq(d[\hh], inf)], inf),
     \rate, 1,
-	\amp, Pseq([Pexprand(0.1, 0.5,1), Pexprand(0.005, 0.2, 2)], inf),
-)));
+    \amp, Pseq([Pexprand(0.1, 0.5, 1), Pexprand(0.005, 0.2, 2)], inf),
+    \quant, 1,
+));
+)
+*/
 
+
+Pdef(\rhythm2, Pbind(
+	\instrument, \bufplay,
+	\dur, 1,
+	\stretch, 1.875,
+	\buf, Pseq([Pseq([\rest],4),Pseq([[d[\l],d[\m],d[\h]],d[\m],d[\m],d[\m]],inf)],inf),
+	\rate, 1,
+	\amp, Pseq([0.5,0.2,0.2,0.2],inf),
+	\quant,1,
+));
+);
+
+/*
+################################experimental#################################
+*/
+(
+Pdef(\experimental,Pbind(
+	\instrument, \bpfsaw,
+	\dur, Pwhite(0.01,5,inf),
+	\freq, Prand([Pexprand(2,1500,1),
+		Pwhite(100,600,2),
+	],inf),
+	\detune, Pexprand(0.01,9,inf),
+	\cfmin, 100,
+	\cfmax, 1500,
+	\atk, Pwhite(0.1,10,inf),
+	\rel, Pwhite(0.1,10,inf),
+	\ldb, Pwhite(0,6,inf),
+	\amp, Pwhite(0.1,0.87,inf),
+	\pan, Pwhite(-0.8,0.8,inf),
+	\out, 0,
+	\quant,1,
+));
+
+Pdef(\ex2, Pbind(
+	\instrument, \bpfsaw,
+	\dur, Pwhite(1,25,1),
+	\freq, Pwhite(1,40,inf),
+	\amp, 0.87,
+	\atk, 0,
+	// Set pan to a pattern alternating between -1 and 1
+	\pan, Pexprand(-1, 1, inf),
+	\out, 0,
+	\quant,3,
+));
+
+Pdef(\ex3, Pbind(
+	\instrument, \bpfsaw,
+	\dur, 1,
+	\freq, 1,
+	\amp, Pwhite(0.1,0.87,inf),
+	\atk, 0,
+	\ldb, Pwhite(0,6,inf),
+	// Set pan to a pattern alternating between -1 and 1
+	\pan, Pexprand(-1, 1, inf),
+	\out, 0,
+	\quant,3,
+));
+)
+)

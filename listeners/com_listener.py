@@ -13,6 +13,6 @@ class ComListener(Listener):
         self.com.flush()
         # self.com.write(bytes("TRIG:IMM", 'utf-8'))
         data = ""
-        while (data == ""):
+        while data == "" or data == "\n":
             data = self.com.readline()
         return data.decode().replace("\r\n", "")

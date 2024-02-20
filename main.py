@@ -5,7 +5,6 @@ import numpy as np
 from keras.models import load_model
 
 from listeners.com_listener import ComListener
-from listeners.simulated_listener import SimulatedListener
 from utils.client import Client
 from utils.plain_bpm_detector import advanced_detect_bpm_capped
 
@@ -18,7 +17,7 @@ SAMPLING_RATE = 160
 PEAK_VAL = 1
 SAMPLING_SIZE = 480
 MAX_BPM = 200
-USE_STATIC_BPM = False
+USE_STATIC_BPM = True
 
 
 def calc_avg_bpm(arr: []):
@@ -31,15 +30,16 @@ def calc_avg_bpm(arr: []):
 
 if __name__ == '__main__':
     listeners = [
-        # ComListener(com_port='COM6', sampling_size=SAMPLING_SIZE, max_bpm=MAX_BPM, sampling_rate=SAMPLING_RATE),
-        SimulatedListener(sampling_size=SAMPLING_SIZE, sampling_rate=SAMPLING_RATE, max_bpm=MAX_BPM)
+        ComListener(com_port='COM6', sampling_size=SAMPLING_SIZE, max_bpm=MAX_BPM, sampling_rate=SAMPLING_RATE),
+        # SimulatedListener(sampling_size=SAMPLING_SIZE, sampling_rate=SAMPLING_RATE, max_bpm=MAX_BPM)
     ]
 
     PROGRAM_START = time.time()
 
     osc_client = Client()
-    model = load_model(MODEL_PATH)
-        
+    if not USE_STATIC_BPM:
+        model = load_model(MODEL_PATH)
+
     predicted_bpms = [0]  # Smoothing of the predicted bpm
 
     CURR_TIME = datetime.now()
@@ -62,16 +62,15 @@ if __name__ == '__main__':
                 continue
             # get new value
             val = int(listener.read())
+
             val = listener.peak_detector.thresholding_algo(val)
 
             listener.updateSequence(val)
 
-            adjusted_sequence = np.array([listener.sequence])
-
             if USE_STATIC_BPM:
-                bpm = advanced_detect_bpm_capped(listener.sequence, SAMPLING_RATE, PEAK_VAL, SAMPLING_RATE * 10)
+                bpm = advanced_detect_bpm_capped(listener.sequence, SAMPLING_RATE, PEAK_VAL, SAMPLING_SIZE)
             else:
-                bpm = model.predict(adjusted_sequence, verbose=0)[0][0]
+                bpm = model.predict(np.array([listener.sequence]), verbose=0)[0][0]
 
             predicted_bpms.append(bpm)
             smoothed_bpm = round(calc_avg_bpm(predicted_bpms))

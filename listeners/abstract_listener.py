@@ -6,15 +6,15 @@ import numpy as np
 
 from utils.peak_detection import real_time_peak_detection
 
-THRESHOLD = 5  # the amount for a trigger (away from curr average)
-LAG = 10
+THRESHOLD = 15  # the amount for a trigger (away from curr average)
+LAG = 30
 INFLUENCE = 0.8  # value between [0,1]->no to full influence
 
 
 class Listener(ABC):
     last_update = time.time()
 
-    def __init__(self, sampling_size=1000, max_bpm=200, sampling_rate=100):
+    def __init__(self, sampling_size, max_bpm, sampling_rate):
         self.sequence = np.full(sampling_size, 0)
         self.max_bpm = max_bpm
         self.sampling_rate = sampling_rate
@@ -25,6 +25,7 @@ class Listener(ABC):
         NotImplementedError()
 
     def updateSequence(self, val):
+        # note val is either 0 or 1
         self.handleLostSignals()
         self.sequence[:-1] = self.sequence[1:]
         self.sequence[-1] = val
@@ -39,12 +40,11 @@ class Listener(ABC):
             self.last_update = time.time()
 
     def inThreashold(self):
-        if 1 in self.sequence[-int(self.sampling_rate / (1 * (self.max_bpm / 60))):]:
-            x = self.sequence[-int(self.sampling_rate / (1 * (self.max_bpm / 60))):]
+        if 1 in self.sequence[-int(self.sampling_rate / (3 * (self.max_bpm / 60))):]:
+            x = self.sequence[-int(self.sampling_rate / (3 * (self.max_bpm / 60))):]
             self.sequence[:-1] = self.sequence[1:]
             self.sequence[-1] = 0
             self.last_update = time.time()
-            print("in threash")
             return True
         return False
 
