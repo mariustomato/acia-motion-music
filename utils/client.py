@@ -15,7 +15,9 @@ class Client:
     def tempoChange(self, bpm, duration=4):
         if self.last_update + duration > time.time(): return
         self.last_update = time.time()
-        if bpm < 0: bpm = 0
+        if bpm <= 0:
+            self.stopAll()
+            bpm = 0
         self.client.send_message("/tempoChange", [bpm, duration])
 
     def stopAll(self):

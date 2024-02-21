@@ -3,25 +3,24 @@ from datetime import datetime
 
 import numpy as np
 from keras.models import load_model
+from serial import SerialException
 
 from listeners.com_listener import ComListener
 from utils.client import Client
 from utils.plain_bpm_detector import advanced_detect_bpm_capped
 
-THRESHOLD = 5  # the amount for a trigger (away from curr average)
-LAG = 10
-INFLUENCE = 0.1  # value between [0,1]->no to full influence
 PEAK_VAL = 1  # TODO: adjust peak value on hardware implementation
 MODEL_PATH = './model.h5'
 SAMPLING_RATE = 160
 PEAK_VAL = 1
-SAMPLING_SIZE = 480
 MAX_BPM = 200
 USE_STATIC_BPM = True
+SAMPLING_SIZE = 480 if not USE_STATIC_BPM else 800
 
 
 def calc_avg_bpm(arr: []):
     sum_bpm = 0
+
     for curr_bpm in arr:
         if curr_bpm != 0:
             sum_bpm += curr_bpm
@@ -40,7 +39,7 @@ if __name__ == '__main__':
     if not USE_STATIC_BPM:
         model = load_model(MODEL_PATH)
 
-    predicted_bpms = [0]  # Smoothing of the predicted bpm
+    predicted_bpms = [0] * int(SAMPLING_SIZE / 2)  # Smoothing of the predicted bpm
 
     CURR_TIME = datetime.now()
     window_size = 4
@@ -48,7 +47,6 @@ if __name__ == '__main__':
     bpm = 0
 
     while True:
-        bpm = 0  # will be set to current highest bpm of all listeners
         for listener in listeners:
             # stop "overclocking"
             if listener.last_update + sampling_time_diff > time.time():
@@ -57,11 +55,15 @@ if __name__ == '__main__':
                 listener.handleLostSignals()
 
             # stop double values
-            if listener.inThreashold():
+            if listener.inThreashold(bpm):
                 listener.updateSequence(0)
                 continue
             # get new value
-            val = int(listener.read())
+            try:
+                val = int(listener.read())
+            except (ValueError, SerialException) as e:
+                print(f"Notice: {e}")
+                continue
 
             val = listener.peak_detector.thresholding_algo(val)
 
@@ -73,12 +75,12 @@ if __name__ == '__main__':
                 bpm = model.predict(np.array([listener.sequence]), verbose=0)[0][0]
 
             predicted_bpms.append(bpm)
+            predicted_bpms.pop(0)
             smoothed_bpm = round(calc_avg_bpm(predicted_bpms))
 
             if val > 0:  # print new value if peak was detected
-                print(f"{PROGRAM_START - time.time()}s- Detected BPM: {bpm} and val {val}")
-                print(f"Detected BPM: {smoothed_bpm}")
+                print(f"{time.time() - PROGRAM_START :3.5f}s\tDetected BPM: {smoothed_bpm:3.1f}\t(raw: {bpm:3.1f})")
 
             if bpm > bpm: bpm = bpm  # choose biggest bpm of all listeners
 
-            osc_client.tempoChange(bpm / 60, 4)
+            osc_client.tempoChange(smoothed_bpm / 60, 4)

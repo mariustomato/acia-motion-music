@@ -6,9 +6,9 @@ import numpy as np
 
 from utils.peak_detection import real_time_peak_detection
 
-THRESHOLD = 15  # the amount for a trigger (away from curr average)
-LAG = 30
-INFLUENCE = 0.8  # value between [0,1]->no to full influence
+THRESHOLD = 60  # the amount for a trigger (away from curr average)
+LAG = 15
+INFLUENCE = 0.55  # value between [0,1]->no to full influence
 
 
 class Listener(ABC):
@@ -39,9 +39,11 @@ class Listener(ABC):
             self.sequence[:lost_signals] = 0
             self.last_update = time.time()
 
-    def inThreashold(self):
-        if 1 in self.sequence[-int(self.sampling_rate / (3 * (self.max_bpm / 60))):]:
-            x = self.sequence[-int(self.sampling_rate / (3 * (self.max_bpm / 60))):]
+    def inThreashold(self, curr_bpm):
+        if curr_bpm == None or curr_bpm == 0:
+            curr_bpm = self.max_bpm
+        if 1 in self.sequence[-int(self.sampling_rate * 0.5 * (60 / curr_bpm)):]:
+            x = self.sequence[-int(self.sampling_rate * 0.5 * (60 / curr_bpm)):]
             self.sequence[:-1] = self.sequence[1:]
             self.sequence[-1] = 0
             self.last_update = time.time()

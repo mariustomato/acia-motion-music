@@ -76,10 +76,10 @@ d.keys.do{arg key;
 }, '/pdef_control',recvPort: 57120);
 
 ~bpmRanges = [
-    (range: (0..60), pdefs: [\heartbeat,\horror1,\horror2]),
+    (range: (1..60), pdefs: [\heartbeat,\horror1,\horror2]),
     (range: (61..80), pdefs: [\joggen1,\joggen2,\bass]),
-	(range: (91..110), pdefs: [\bass_club,\club1,\club2,\club3,\rhythm,\rhythm2]),
-    (range: (111..290), pdefs: [\experimental,\ex2,\ex3])
+	(range: (91..130), pdefs: [\bass_club,\club1,\club2,\club3,\rhythm,\rhythm2]),
+    (range: (131..290), pdefs: [\experimental,\ex2,\ex3])
 ];
 
 ~playPdefsForBpm = {
@@ -94,7 +94,8 @@ d.keys.do{arg key;
     Pdef.all.do { |pdef| pdef.stop };
 	if (rangeItem.notNil,{
         rangeItem.pdefs.do({ |pdefName|
-            Pdef(pdefName).play(tempoClock: t);
+			Pdef(pdefName).clock= t;
+            Pdef(pdefName).play();
         });
     },{
         "No matching BPM range found for current BPM: %\n".postln;
@@ -113,18 +114,25 @@ s.options.device = "hdmi_ausgang_hier_einsetzen";
 
 
 (
-~tempoChange = { //gradual Tempo change
-	arg clock, newTempo, numBeats;
-	var i =0, tempoArray;
-	tempoArray = Array.interpolation(numBeats, clock.tempo, newTempo/60);
-	clock.schedAbs(clock.nextBar, {
-		clock.tempo_(tempoArray[i]);
-		i = i + 1;
-		if(i < numBeats) {1} {"done".postln};
-	});
+~tempoChange = { |clock, newTempo, numBeats|
+	var i = 0, tempoArray;
+	// Check if newTempo is positive and greater than zero
+	if (newTempo > 0) {
+		tempoArray = Array.interpolation(numBeats, clock.tempo, newTempo / 60);
+		clock.schedAbs(clock.nextBar, { |beats|
+			clock.tempo_(tempoArray[i]);
+			i = i + 1;
+			if (i < tempoArray.size) {
+				clock.schedAbs(clock.nextBar + beats, _); // Reschedule for next bar
+			} {
+				"done".postln;
+			};
+		});
+	} {
+		/pdef_control.value("stop");
+	};
 };
 )
-
 /*
 ################################MUSIC#################################
 (
